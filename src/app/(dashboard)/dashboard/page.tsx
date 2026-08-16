@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClipboardList, ExternalLink, UtensilsCrossed, Wallet } from "lucide-react";
+import Image from "next/image";
+import {
+  ClipboardList,
+  ExternalLink,
+  Flame,
+  ImageIcon,
+  PlusCircle,
+  Receipt,
+  UtensilsCrossed,
+  Wallet,
+} from "lucide-react";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -8,7 +18,13 @@ import { getRestaurantByOwnerId } from "@/lib/restaurant";
 import { formatCents } from "@/lib/currency";
 import { getAppUrl } from "@/lib/site";
 import { pageTitle } from "@/config/brand";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
@@ -24,28 +40,85 @@ export default async function DashboardPage() {
   const restaurant = await getRestaurantByOwnerId(session!.user!.id);
   const restaurantId = restaurant!.id;
 
-  const [pendingOrders, todayOrders, productCount] = await Promise.all([
-    prisma.order.count({
-      where: { restaurantId, status: { in: ["pending", "preparing"] } },
-    }),
-    prisma.order.findMany({
-      where: {
-        restaurantId,
-        createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-        // Pedido cancelado nunca vira receita de verdade — exclui do
-        // faturamento do dia (o valor total do card já não deve nem contar
-        // esses pedidos, mesmo que tenham sido criados hoje).
-        status: { not: "cancelled" },
-      },
-      select: { totalCents: true },
-    }),
-    prisma.product.count({
-      where: { category: { restaurantId } },
-    }),
-  ]);
+  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+
+  const [pendingOrders, todayOrders, productCount, validOrders, todayItems] =
+    await Promise.all([
+      prisma.order.count({
+        where: { restaurantId, status: { in: ["pending", "preparing"] } },
+      }),
+      prisma.order.findMany({
+        where: {
+          restaurantId,
+          createdAt: { gte: startOfToday },
+          // Pedido cancelado nunca vira receita de verdade — exclui do
+          // faturamento do dia (o valor total do card já não deve nem contar
+          // esses pedidos, mesmo que tenham sido criados hoje).
+          status: { not: "cancelled" },
+        },
+        select: { totalCents: true },
+      }),
+      prisma.product.count({
+        where: { category: { restaurantId } },
+      }),
+      // Base para o Ticket médio: todos os pedidos válidos (não cancelados)
+      // já cadastrados, mesma regra de "cancelado não conta" usada acima e
+      // na página de Clientes.
+      prisma.order.findMany({
+        where: { restaurantId, status: { not: "cancelled" } },
+        select: { totalCents: true },
+      }),
+      // Base para o "Mais vendido hoje": itens dos pedidos de hoje (não
+      // cancelados), com a imagem atual do produto para exibir no card.
+      prisma.orderItem.findMany({
+        where: {
+          order: {
+            restaurantId,
+            createdAt: { gte: startOfToday },
+            status: { not: "cancelled" },
+          },
+        },
+        select: {
+          productId: true,
+          productName: true,
+          quantity: true,
+          unitPriceCents: true,
+          product: { select: { imageUrl: true } },
+        },
+      }),
+    ]);
 
   const todayTotalCents = todayOrders.reduce((sum, o) => sum + o.totalCents, 0);
   const publicMenuUrl = `${getAppUrl()}/r/${restaurant!.slug}`;
+
+  // Ticket médio = faturamento válido total / número de pedidos válidos.
+  const validOrdersTotalCents = validOrders.reduce((sum, o) => sum + o.totalCents, 0);
+  const averageTicketCents =
+    validOrders.length > 0 ? Math.round(validOrdersTotalCents / validOrders.length) : 0;
+
+  // Agrega os itens de hoje por produto para achar o mais vendido (por
+  // quantidade — não por faturamento, para não distorcer com um item caro
+  // vendido uma única vez).
+  const salesByProduct = new Map<
+    string,
+    { name: string; quantity: number; revenueCents: number; imageUrl: string | null }
+  >();
+  for (const item of todayItems) {
+    const existing = salesByProduct.get(item.productId);
+    if (existing) {
+      existing.quantity += item.quantity;
+      existing.revenueCents += item.unitPriceCents * item.quantity;
+    } else {
+      salesByProduct.set(item.productId, {
+        name: item.productName,
+        quantity: item.quantity,
+        revenueCents: item.unitPriceCents * item.quantity,
+        imageUrl: item.product?.imageUrl ?? null,
+      });
+    }
+  }
+  const topProduct =
+    Array.from(salesByProduct.values()).sort((a, b) => b.quantity - a.quantity)[0] ?? null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -69,7 +142,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Pedidos em aberto"
           value={String(pendingOrders)}
@@ -83,11 +156,95 @@ export default async function DashboardPage() {
           color="emerald"
         />
         <StatCard
+          label="Ticket médio"
+          value={formatCents(averageTicketCents)}
+          icon={Receipt}
+          color="violet"
+        />
+        <StatCard
           label="Produtos no cardápio"
           value={String(productCount)}
           icon={UtensilsCrossed}
-          color="violet"
+          color="orange"
         />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card className="overflow-hidden">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Flame className="size-4 text-orange-400" />
+              Mais vendido hoje
+            </CardTitle>
+            <CardDescription>
+              {topProduct
+                ? "O prato que mais saiu no cardápio hoje."
+                : "Assim que os primeiros pedidos de hoje chegarem, o prato mais vendido aparece aqui."}
+            </CardDescription>
+          </CardHeader>
+          {topProduct && (
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border border-border bg-white/5">
+                  {topProduct.imageUrl ? (
+                    <Image
+                      src={topProduct.imageUrl}
+                      alt=""
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                      // Upload de produto vira uma data: URL (ver
+                      // src/lib/uploads.ts) — o otimizador do Next não
+                      // processa isso, então pulamos a otimização nesse caso,
+                      // igual já é feito em ProductRow.
+                      unoptimized={topProduct.imageUrl.startsWith("data:")}
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center">
+                      <ImageIcon className="size-5 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-white">{topProduct.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {topProduct.quantity}{" "}
+                    {topProduct.quantity === 1 ? "unidade vendida" : "unidades vendidas"} ·{" "}
+                    {formatCents(topProduct.revenueCents)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Ações rápidas</CardTitle>
+            <CardDescription>Atalhos para o que você mais usa no dia a dia.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              className="w-full gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400 sm:w-auto"
+              render={
+                <Link href="/dashboard/menu">
+                  <PlusCircle className="size-4" />
+                  Novo produto
+                </Link>
+              }
+            />
+            <Button
+              variant="outline"
+              className="w-full gap-2 rounded-xl sm:w-auto"
+              render={
+                <Link href="/dashboard/orders">
+                  <ClipboardList className="size-4" />
+                  Ver pedidos
+                </Link>
+              }
+            />
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
