@@ -41,9 +41,13 @@ export default async function OrderTrackingPage(
     ? ORDER_STATUS_LABEL[order.status]
     : order.status;
   const isCancelled = order.status === "cancelled";
-  const canRequestBill = (["pending", "preparing", "ready"] as string[]).includes(
-    order.status
-  );
+  // "Pedir a conta" fica visível do momento em que o pedido é feito até
+  // "Entregue" (completed) — só some se o pedido foi cancelado. Antes
+  // faltava "completed" nessa lista, então o botão sumia assim que o
+  // pedido era marcado como entregue.
+  const canRequestBill = (
+    ["pending", "preparing", "ready", "completed"] as string[]
+  ).includes(order.status);
   const currentStepIndex = (
     HAPPY_PATH as readonly string[]
   ).indexOf(isOrderStatus(order.status) ? order.status : "pending");

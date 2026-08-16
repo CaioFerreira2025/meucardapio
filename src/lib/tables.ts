@@ -19,7 +19,14 @@ export type TableBillRequest = {
   requestedSince: Date;
 };
 
-// Agrupa por mesa os pedidos ativos que sinalizaram "pedir a conta"
+// Além dos status "em aberto" (ACTIVE_ORDER_STATUSES, usados para fechar a
+// mesa), o cliente também pode pedir a conta com o pedido já "Entregue"
+// (completed) — antes da equipe fechar a mesa no Caixa. Esse alerta
+// precisa enxergar esse caso também, sem mudar o que closeTable considera
+// "em aberto" para fins de fechamento de mesa.
+const BILL_REQUEST_STATUSES = [...ACTIVE_ORDER_STATUSES, "completed"] as const;
+
+// Agrupa por mesa os pedidos que sinalizaram "pedir a conta"
 // (Order.billRequested) — usado no alerta visual do painel (Visão Geral e
 // Central de Pedidos) e na tela de fechamento de mesa.
 export async function getTablesAwaitingBill(
@@ -29,7 +36,7 @@ export async function getTablesAwaitingBill(
     where: {
       restaurantId,
       billRequested: true,
-      status: { in: [...ACTIVE_ORDER_STATUSES] },
+      status: { in: [...BILL_REQUEST_STATUSES] },
       tableNumber: { not: null },
     },
     include: { items: true },

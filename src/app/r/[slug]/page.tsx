@@ -30,11 +30,21 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
   const categories = await prisma.category.findMany({
     where: { restaurantId: restaurant.id },
     orderBy: { position: "asc" },
-    include: {
+    // `select` explícito em vez do objeto inteiro do produto — o cardápio
+    // público não usa custo, disponibilidade (já filtrada), datas etc., só
+    // pesar menos a consulta e a serialização da resposta.
+    select: {
+      id: true,
+      name: true,
       products: {
         where: { isAvailable: true },
         orderBy: { position: "asc" },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          priceCents: true,
+          imageUrl: true,
           // "Venda mais" — só sugere complementares que também estão
           // disponíveis no momento.
           complements: {

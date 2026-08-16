@@ -5,9 +5,12 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { emitOrderEvent } from "@/lib/order-events";
 
-// Status em que um pedido ainda está "ativo" na mesa — pedidos concluídos ou
-// cancelados não fazem parte da conta a fechar.
-const ACTIVE_STATUSES = ["pending", "preparing", "ready"];
+// Status em que ainda faz sentido pedir a conta — do recebimento do pedido
+// até "Entregue" (completed). Só um pedido cancelado fica de fora: não há
+// conta a fechar para ele. "completed" entra aqui porque o cliente pode
+// pedir a conta depois que a comida já chegou na mesa, antes de a equipe
+// fechar a mesa/registrar o pagamento (Chamado de Mesa / Caixa).
+const ACTIVE_STATUSES = ["pending", "preparing", "ready", "completed"];
 
 export type RequestBillResult =
   | { success: true }

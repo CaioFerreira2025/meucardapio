@@ -1,4 +1,5 @@
 import path from "node:path";
+import sharp from "sharp";
 
 import { MAX_UPLOAD_BYTES } from "@/lib/uploads-shared";
 
@@ -51,9 +52,31 @@ export async function saveProductImage(
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const base64 = buffer.toString("base64");
 
-  return { success: true, url: `data:${file.type};base64,${base64}` };
+  // Comprime e redimensiona antes de guardar como data URL — como a foto
+  // vai embutida direto no HTML do cardápio público (comentário acima),
+  // o tamanho dela pesa direto na velocidade de carregamento pelo QR Code
+  // no salão. Reduzir para no máximo 960px de largura e reencodar em WebP
+  // costuma cortar 80-95% do peso de uma foto tirada de celular, sem perda
+  // perceptível — o card do produto no cardápio renderiza a imagem bem
+  // menor que isso. Se a compressão falhar por qualquer motivo (formato
+  // inesperado, etc.), cai para o arquivo original: nunca deixa o upload
+  // quebrar por causa disso (mesma filosofia de confiabilidade acima).
+  try {
+    const compressed = await sharp(buffer)
+      .rotate() // aplica a orientação do EXIF antes de descartá-lo
+      .resize({ width: 960, withoutEnlargement: true })
+      .webp({ quality: 72 })
+      .toBuffer();
+
+    return {
+      success: true,
+      url: `data:image/webp;base64,${compressed.toString("base64")}`,
+    };
+  } catch {
+    const base64 = buffer.toString("base64");
+    return { success: true, url: `data:${file.type};base64,${base64}` };
+  }
 }
 
 // --- Compatibilidade com a versão antiga (armazenamento em disco) -------

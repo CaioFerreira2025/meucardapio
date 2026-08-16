@@ -18,14 +18,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { formatCents } from "@/lib/currency";
 import { createOrder } from "./actions";
 
@@ -229,11 +228,11 @@ export function MenuClient({
       ))}
 
       {totalItems > 0 && (
-        <Sheet>
+        <Dialog>
           {/* Botão flutuante do carrinho — fica ancorado no canto inferior
               em qualquer tamanho de tela, sem empurrar o conteúdo da
               página (diferente de uma barra fixa em largura total). */}
-          <SheetTrigger
+          <DialogTrigger
             render={
               <button
                 type="button"
@@ -251,17 +250,27 @@ export function MenuClient({
               </button>
             }
           />
-          <SheetContent side="right" className="flex w-full flex-col gap-0 sm:max-w-md">
-            <SheetHeader>
-              <SheetTitle className="text-white">
+          {/* Checkout como modal central flutuante — antes era um sheet
+              lateral (side="right") que, no celular, ficava só com 75% da
+              largura por causa de uma regra de especificidade do
+              componente Sheet (data-[side=right]:w-3/4 tem mais
+              especificidade que a largura passada via className), dando a
+              impressão de barra lateral espremida. Um Dialog centralizado
+              resolve isso de raiz e dá bem mais espaço pros campos do
+              formulário. Mesmo padrão de "modal alto com rolagem interna"
+              já usado no formulário de produto do painel (max-h-[90vh] +
+              overflow-hidden no modal, scroll só na área de conteúdo). */}
+          <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+            <DialogHeader className="gap-0.5 p-4 pb-3">
+              <DialogTitle className="text-white">
                 Seu pedido — {restaurantName}
-              </SheetTitle>
-              <SheetDescription>
+              </DialogTitle>
+              <DialogDescription>
                 Confira os itens e preencha seus dados para enviar o pedido.
-              </SheetDescription>
-            </SheetHeader>
+              </DialogDescription>
+            </DialogHeader>
 
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4">
               <div className="flex flex-col gap-1 rounded-xl bg-white/[0.03] p-2 ring-1 ring-white/5">
                 {lines.map((line) => (
                   <div
@@ -373,7 +382,7 @@ export function MenuClient({
               </div>
             </div>
 
-            <SheetFooter>
+            <div className="mt-auto flex flex-col gap-2 border-t border-border p-4">
               <div className="flex items-center justify-between text-sm font-medium">
                 <span className="text-muted-foreground">Total</span>
                 <span className="text-lg font-semibold text-orange-300">
@@ -387,9 +396,9 @@ export function MenuClient({
               >
                 {isSubmitting ? "Enviando..." : "Enviar pedido"}
               </Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
