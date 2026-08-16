@@ -31,9 +31,13 @@ export const restaurantSettingsSchema = z.object({
 });
 export type RestaurantSettingsInput = z.infer<typeof restaurantSettingsSchema>;
 
-// Avaliação da experiência (cliente, cardápio público — sem login). Nota
-// obrigatória de 1 a 5; comentário opcional e curto (é um comentário
-// rápido pós-atendimento, não uma resenha).
+// Avaliação da experiência (cliente, cardápio público — sem login). Nota,
+// nome e telefone obrigatórios; comentário opcional e curto (é um
+// comentário rápido pós-atendimento, não uma resenha). Nome/telefone
+// passaram a ser exigidos pro lojista sempre conseguir identificar quem
+// avaliou e usar o atalho "Responder no WhatsApp" (Painel -> Avaliações) —
+// mesmos limites de tamanho usados em customerName/customerPhone do
+// checkout (checkoutSchema em src/app/r/[slug]/actions.ts).
 export const reviewSchema = z.object({
   rating: z
     .number()
@@ -41,12 +45,8 @@ export const reviewSchema = z.object({
     .min(1, "Escolha de 1 a 5 estrelas")
     .max(5, "Escolha de 1 a 5 estrelas"),
   comment: z.string().max(500).optional().or(z.literal("")),
-  // Nome/telefone de quem avaliou — opcionais, mesmos limites de tamanho
-  // usados em customerName/customerPhone do checkout (checkoutSchema em
-  // src/app/r/[slug]/actions.ts), sem o `.min(...)` de lá porque aqui não
-  // são obrigatórios.
-  name: z.string().max(80).optional().or(z.literal("")),
-  phone: z.string().max(20).optional().or(z.literal("")),
+  name: z.string().min(2, "Informe seu nome").max(80),
+  phone: z.string().min(8, "Informe um telefone válido").max(20),
 });
 export type ReviewInput = z.infer<typeof reviewSchema>;
 

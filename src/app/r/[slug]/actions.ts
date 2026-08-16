@@ -92,8 +92,8 @@ export type SubmitReviewInput = {
   slug: string;
   rating: number;
   comment?: string;
-  name?: string;
-  phone?: string;
+  name: string;
+  phone: string;
 };
 
 export type SubmitReviewResult =
@@ -105,15 +105,17 @@ export type SubmitReviewResult =
 // cria uma linha nova em Review; não há limite de 1 por cliente (não temos
 // como identificar o cliente de forma confiável sem login) nem vínculo
 // obrigatório com um pedido específico — o cliente pode avaliar mesmo sem
-// ter finalizado um pedido ainda.
+// ter finalizado um pedido ainda. Nome e telefone são obrigatórios (ver
+// reviewSchema) pra o lojista sempre conseguir identificar/responder quem
+// avaliou.
 export async function submitReview(
   input: SubmitReviewInput
 ): Promise<SubmitReviewResult> {
   const parsed = reviewSchema.safeParse({
     rating: input.rating,
     comment: input.comment ?? "",
-    name: input.name ?? "",
-    phone: input.phone ?? "",
+    name: input.name,
+    phone: input.phone,
   });
   if (!parsed.success) {
     return {
@@ -135,8 +137,8 @@ export async function submitReview(
       restaurantId: restaurant.id,
       rating: parsed.data.rating,
       comment: parsed.data.comment || null,
-      name: parsed.data.name || null,
-      phone: parsed.data.phone || null,
+      name: parsed.data.name,
+      phone: parsed.data.phone,
     },
   });
 

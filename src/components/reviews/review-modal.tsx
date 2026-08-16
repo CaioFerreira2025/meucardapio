@@ -49,6 +49,11 @@ export function ReviewModal({
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Erros de validação amigáveis exibidos junto aos campos (além do toast),
+  // pra ficar claro qual campo falta preencher quando o cliente tenta
+  // enviar em branco.
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   function reset() {
     setRating(0);
@@ -56,6 +61,8 @@ export function ReviewModal({
     setComment("");
     setName("");
     setPhone("");
+    setNameError("");
+    setPhoneError("");
   }
 
   async function handleSubmit() {
@@ -64,13 +71,36 @@ export function ReviewModal({
       return;
     }
 
+    // Nome e telefone são obrigatórios (ver reviewSchema/submitReview) —
+    // validação amigável aqui antes de bater na Server Action, que também
+    // valida (defesa em profundidade, ex.: JS desabilitado/chamada direta).
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+    let hasError = false;
+    if (trimmedName.length < 2) {
+      setNameError("Informe seu nome.");
+      hasError = true;
+    } else {
+      setNameError("");
+    }
+    if (trimmedPhone.length < 8) {
+      setPhoneError("Informe um telefone válido.");
+      hasError = true;
+    } else {
+      setPhoneError("");
+    }
+    if (hasError) {
+      toast.error("Preencha seu nome e telefone para enviar a avaliação.");
+      return;
+    }
+
     setIsSubmitting(true);
     const result = await submitReview({
       slug,
       rating,
       comment: comment || undefined,
-      name: name || undefined,
-      phone: phone || undefined,
+      name: trimmedName,
+      phone: trimmedPhone,
     });
     setIsSubmitting(false);
 
@@ -151,25 +181,54 @@ export function ReviewModal({
 
           <div className="flex flex-col gap-3 border-t border-border pt-4 pb-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="review-name">Seu nome (opcional)</Label>
+              <Label htmlFor="review-name">
+                Seu nome <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="review-name"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  if (nameError) setNameError("");
+                }}
                 placeholder="Como podemos te chamar?"
+                required
+                aria-invalid={nameError ? true : undefined}
+                aria-describedby={nameError ? "review-name-error" : undefined}
+                className={nameError ? "border-red-500 focus-visible:ring-red-500/40" : undefined}
               />
+              {nameError && (
+                <p id="review-name-error" className="text-xs text-red-400">
+                  {nameError}
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="review-phone">Telefone / WhatsApp (opcional)</Label>
+              <Label htmlFor="review-phone">
+                Telefone / WhatsApp <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="review-phone"
                 value={phone}
-                onChange={(event) => setPhone(event.target.value)}
+                onChange={(event) => {
+                  setPhone(event.target.value);
+                  if (phoneError) setPhoneError("");
+                }}
                 placeholder="(11) 99999-9999"
+                required
+                aria-invalid={phoneError ? true : undefined}
+                aria-describedby={phoneError ? "review-phone-error" : undefined}
+                className={phoneError ? "border-red-500 focus-visible:ring-red-500/40" : undefined}
               />
-              <p className="text-xs text-muted-foreground">
-                Só usamos pra o restaurante poder te responder, se precisar.
-              </p>
+              {phoneError ? (
+                <p id="review-phone-error" className="text-xs text-red-400">
+                  {phoneError}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Só usamos pra o restaurante poder te responder, se precisar.
+                </p>
+              )}
             </div>
           </div>
         </div>
