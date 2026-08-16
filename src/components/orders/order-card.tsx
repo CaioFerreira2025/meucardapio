@@ -93,12 +93,18 @@ export function OrderCard({ order }: { order: Order }) {
         </div>
       </CardContent>
       {(nextStatus || canCancel) && (
-        <CardFooter className="flex gap-2">
+        // As colunas da Central de pedidos ficam bem estreitas em telas
+        // grandes (4 colunas lado a lado) — texto como "Marcar como Em
+        // preparo" ao lado de "Cancelar" não cabe numa única linha nessa
+        // largura e ficava cortado. Empilhando os botões (`flex-col`) e
+        // deixando cada um ocupar a largura toda (`w-full`) eles sempre
+        // cabem por inteiro, em qualquer largura de coluna/tela.
+        <CardFooter className="flex flex-col items-stretch gap-2">
           {nextStatus && (
             <Button
               size="sm"
               disabled={isPending}
-              className="bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+              className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
               onClick={() =>
                 startTransition(() => updateOrderStatus(order.id, nextStatus))
               }
@@ -111,6 +117,7 @@ export function OrderCard({ order }: { order: Order }) {
               size="sm"
               variant="outline"
               disabled={isPending}
+              className="w-full"
               onClick={() =>
                 startTransition(() => updateOrderStatus(order.id, "cancelled"))
               }

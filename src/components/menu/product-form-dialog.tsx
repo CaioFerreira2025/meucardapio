@@ -126,20 +126,27 @@ export function ProductFormDialog({
           )
         }
       />
-      <DialogContent>
+      {/* Formulário de produto é o modal mais longo do painel (foto, preço,
+          custo, disponibilidade, complementos...) — em telas pequenas ele
+          facilmente ultrapassa a altura da viewport. `max-h-[90vh]` +
+          `overflow-hidden` no modal, com só a área de campos rolando
+          internamente (`overflow-y-auto`), mantém título e botão "Salvar"
+          sempre visíveis mesmo com o teclado do celular aberto. */}
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>{product ? "Editar produto" : "Novo produto"}</DialogTitle>
           <DialogDescription>
             Esses dados aparecem no cardápio público do seu restaurante.
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={formAction} className="flex min-h-0 flex-1 flex-col gap-4">
           <input type="hidden" name="categoryId" value={categoryId} />
           <input type="hidden" name="isAvailable" value={isAvailable ? "on" : ""} />
           <input type="hidden" name="imageUrl" value={imageUrl} />
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Foto</Label>
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
+            <div className="flex flex-col gap-1.5">
+              <Label>Foto</Label>
             <ProductImageUpload value={imageUrl} onChange={setImageUrl} />
           </div>
 
@@ -291,6 +298,7 @@ export function ProductFormDialog({
           )}
 
           {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+          </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isPending || !categoryId}>

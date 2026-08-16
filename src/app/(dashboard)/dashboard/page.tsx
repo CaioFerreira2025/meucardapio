@@ -32,6 +32,10 @@ export default async function DashboardPage() {
       where: {
         restaurantId,
         createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        // Pedido cancelado nunca vira receita de verdade — exclui do
+        // faturamento do dia (o valor total do card já não deve nem contar
+        // esses pedidos, mesmo que tenham sido criados hoje).
+        status: { not: "cancelled" },
       },
       select: { totalCents: true },
     }),
