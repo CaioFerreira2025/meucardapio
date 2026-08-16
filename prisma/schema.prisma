@@ -1,0 +1,213 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Fase 0: SQLite para dev local (zero-config). Para produção, troque
+// `provider` para "postgresql" e aponte DATABASE_URL para o banco real
+// (Neon, Supabase, Railway, etc.) — o schema abaixo já é compatível.
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  // "native" gera o engine da plataforma que roda `prisma generate` (Linux,
+  // neste sandbox); "windows" garante que o Prisma Client continue
+  // funcionando na máquina Windows do dono do projeto sem reinstalar nada.
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Autenticação (compatível com Auth.js / NextAuth Prisma Adapter)
+// ---------------------------------------------------------------------------
+
+model User {
+  id               String    @id @default(cuid())
+  name             String?
+  email            String    @unique
+  emailVerified    DateTime?
+  image            String?
+  password         String? // hash bcrypt, usado no login por credenciais
+  stripeCustomerId String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  subscription Subscription?
+  restaurant   Restaurant?
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Cobrança (Fase 2 — Stripe)
+// ---------------------------------------------------------------------------
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  stripeSubscriptionId String   @unique
+  stripePriceId        String
+  // Espelha o `status` de uma Subscription do Stripe (trialing, active,
+  // past_due, canceled, unpaid, incomplete, incomplete_expired, paused).
+  // SQLite não suporta enum nativo no Prisma — validamos o valor em
+  // src/lib/stripe.ts antes de gravar. Ao migrar para Postgres, é possível
+  // trocar para um `enum` do Prisma se preferir.
+  // https://stripe.com/docs/api/subscriptions/object#subscription_object-status
+  status               String
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// ---------------------------------------------------------------------------
+// CardápioPontoCom — cardápio digital e pedidos (Fase 3)
+// ---------------------------------------------------------------------------
+
+// Cada usuário dono de restaurante tem 1 Restaurant (MVP: sem multi-loja
+// por conta ainda). `slug` é a URL pública do cardápio: /r/[slug].
+model Restaurant {
+  id          String   @id @default(cuid())
+  ownerId     String   @unique
+  name        String
+  slug        String   @unique
+  description String?
+  phone       String?
+  address     String?
+  isOpen      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  categories Category[]
+  orders     Order[]
+
+  @@map("restaurants")
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products   Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  categoryId  String
+  name        String
+  description String?
+  // Preço em centavos (evita ponto flutuante em dinheiro).
+  priceCents  Int
+  // Custo em centavos (opcional — usado para calcular a margem no painel).
+  // `null` = custo não informado ainda; não exibimos margem nesse caso.
+  costCents   Int?
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  // "Venda mais" — produtos complementares sugeridos junto com este (ex.:
+  // Picanha -> Batata, Farofa, Refrigerante). Auto-relação m:n implícita:
+  // `complements` é o que ESTE produto sugere; `complementFor` é o
+  // inverso (produtos que sugerem este). Mesma tabela de junção nos dois
+  // lados, então nenhum sistema paralelo é criado.
+  complements   Product[] @relation("ProductComplements")
+  complementFor Product[] @relation("ProductComplements")
+
+  @@map("products")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  restaurantId  String
+  customerName  String
+  customerPhone String
+  tableNumber   String?
+  notes         String?
+  // pending -> preparing -> ready -> completed (ou cancelled a qualquer momento)
+  status        String   @default("pending")
+  totalCents    Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items      OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  productId      String
+  // snapshot do produto no momento do pedido (preço pode mudar depois)
+  productName    String
+  unitPriceCents Int
+  quantity       Int
+  notes          String?
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}

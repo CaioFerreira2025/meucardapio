@@ -1,0 +1,189 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import {
+  ClipboardList,
+  CreditCard,
+  ExternalLink,
+  LayoutDashboard,
+  LogOut,
+  Users,
+  UtensilsCrossed,
+} from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DarkPortalRoot } from "@/components/theme/dark-portal-root";
+import { Logo } from "@/components/brand/logo";
+
+const NAV_ITEMS = [
+  { href: "/dashboard", label: "Visão geral", icon: LayoutDashboard },
+  { href: "/dashboard/menu", label: "Cardápio", icon: UtensilsCrossed },
+  { href: "/dashboard/orders", label: "Pedidos", icon: ClipboardList },
+  { href: "/dashboard/customers", label: "Clientes", icon: Users },
+  { href: "/dashboard/billing", label: "Cobrança", icon: CreditCard },
+];
+
+type SessionUser = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+function initials(name?: string | null, email?: string | null) {
+  const source = name ?? email ?? "?";
+  return source
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+// Shell do painel: sidebar fixa no desktop, barra de abas fixa no mobile —
+// o mesmo padrão "app premium" (Vercel, Linear, Stripe) usado por cima do
+// tema escuro definido em .dark (globals.css). Recebe usuário/restaurante
+// prontos do Server Component pai (layout.tsx) para não precisar buscar
+// sessão de novo no client.
+export function DashboardShell({
+  user,
+  restaurantSlug,
+  children,
+}: {
+  user: SessionUser;
+  restaurantSlug: string;
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <DarkPortalRoot className="dark relative min-h-screen bg-background text-foreground">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 overflow-hidden"
+      >
+        <div className="absolute top-[-15%] left-1/3 h-[32rem] w-[32rem] rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
+      </div>
+
+      {/* Sidebar — desktop */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar/80 backdrop-blur-xl md:flex">
+        <Link
+          href="/dashboard"
+          className="flex h-16 shrink-0 items-center border-b border-border px-5"
+        >
+          <Logo size="sm" />
+        </Link>
+
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white",
+                  isActive &&
+                    "bg-gradient-to-r from-orange-500/15 to-rose-500/10 text-white ring-1 ring-orange-500/20"
+                )}
+              >
+                <item.icon
+                  className={cn("size-4", isActive && "text-orange-400")}
+                  strokeWidth={2}
+                />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex flex-col gap-2 border-t border-border p-3">
+          <Link
+            href={`/r/${restaurantSlug}`}
+            target="_blank"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-orange-300 transition-colors hover:bg-white/5"
+          >
+            <ExternalLink className="size-4" strokeWidth={2} />
+            Ver cardápio público
+          </Link>
+
+          <div className="flex items-center gap-2.5 rounded-lg px-3 py-2">
+            <Avatar className="size-8 shrink-0 ring-1 ring-border">
+              <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+              <AvatarFallback className="bg-white/10 text-xs text-white">
+                {initials(user.name, user.email)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">
+                {user.name ?? "Minha conta"}
+              </p>
+              <p className="truncate text-xs text-zinc-500">{user.email}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="shrink-0 rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-white"
+              aria-label="Sair"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Topbar — mobile */}
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xl md:hidden">
+        <Link href="/dashboard">
+          <Logo size="sm" />
+        </Link>
+        <div className="flex items-center gap-1">
+          <Link
+            href={`/r/${restaurantSlug}`}
+            target="_blank"
+            className="rounded-md p-2 text-zinc-400 hover:bg-white/5 hover:text-white"
+            aria-label="Ver cardápio público"
+          >
+            <ExternalLink className="size-4" />
+          </Link>
+          <Avatar className="size-7 ring-1 ring-border">
+            <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+            <AvatarFallback className="bg-white/10 text-[10px] text-white">
+              {initials(user.name, user.email)}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </header>
+
+      {/* Conteúdo */}
+      <div className="relative flex min-h-screen flex-col md:pl-60">
+        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8">
+          {children}
+        </main>
+      </div>
+
+      {/* Barra de abas — mobile */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-background/90 backdrop-blur-xl md:hidden">
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-zinc-500 transition-colors",
+                isActive && "text-orange-400"
+              )}
+            >
+              <item.icon className="size-5" strokeWidth={isActive ? 2.5 : 2} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+    </DarkPortalRoot>
+  );
+}
