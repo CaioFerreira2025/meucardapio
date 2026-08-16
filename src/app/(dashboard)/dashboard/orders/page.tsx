@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getTablesAwaitingBill } from "@/lib/tables";
 import { pageTitle } from "@/config/brand";
 import { OrderColumn } from "@/components/orders/order-column";
 import { OrderCard } from "@/components/orders/order-card";
+import { BillRequestsAlert } from "@/components/tables/bill-requests-alert";
 
 export const metadata: Metadata = {
   title: pageTitle("Pedidos"),
@@ -14,6 +16,8 @@ export const metadata: Metadata = {
 export default async function OrdersPage() {
   const session = await auth();
   const restaurant = await getRestaurantByOwnerId(session!.user!.id);
+
+  const tablesAwaitingBill = await getTablesAwaitingBill(restaurant!.id);
 
   const orders = await prisma.order.findMany({
     where: { restaurantId: restaurant!.id },
@@ -42,6 +46,8 @@ export default async function OrdersPage() {
           Acompanhe cada pedido do recebimento até a entrega.
         </p>
       </div>
+
+      <BillRequestsAlert tables={tablesAwaitingBill} />
 
       <div className="grid gap-6 lg:grid-cols-4">
         <OrderColumn

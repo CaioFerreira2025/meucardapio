@@ -15,6 +15,7 @@ import {
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getTablesAwaitingBill } from "@/lib/tables";
 import { formatCents } from "@/lib/currency";
 import { getAppUrl } from "@/lib/site";
 import { pageTitle } from "@/config/brand";
@@ -29,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { QrCodeCard } from "@/components/dashboard/qr-code-card";
+import { BillRequestsAlert } from "@/components/tables/bill-requests-alert";
 
 export const metadata: Metadata = {
   title: pageTitle("Dashboard"),
@@ -42,8 +44,14 @@ export default async function DashboardPage() {
 
   const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
 
-  const [pendingOrders, todayOrders, productCount, validOrders, todayItems] =
-    await Promise.all([
+  const [
+    pendingOrders,
+    todayOrders,
+    productCount,
+    validOrders,
+    todayItems,
+    tablesAwaitingBill,
+  ] = await Promise.all([
       prisma.order.count({
         where: { restaurantId, status: { in: ["pending", "preparing"] } },
       }),
@@ -86,6 +94,7 @@ export default async function DashboardPage() {
           product: { select: { imageUrl: true } },
         },
       }),
+      getTablesAwaitingBill(restaurantId),
     ]);
 
   const todayTotalCents = todayOrders.reduce((sum, o) => sum + o.totalCents, 0);
@@ -141,6 +150,8 @@ export default async function DashboardPage() {
           }
         />
       </div>
+
+      <BillRequestsAlert tables={tablesAwaitingBill} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

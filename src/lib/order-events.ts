@@ -13,7 +13,8 @@ import { EventEmitter } from "node:events";
 
 export type OrderEvent =
   | { type: "new_order"; orderId: string }
-  | { type: "status_changed"; orderId: string; status: string };
+  | { type: "status_changed"; orderId: string; status: string }
+  | { type: "bill_requested"; orderId: string; tableNumber: string | null };
 
 const globalForEvents = globalThis as unknown as {
   orderEvents: EventEmitter | undefined;

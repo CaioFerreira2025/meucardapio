@@ -127,9 +127,10 @@ model Restaurant {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  categories Category[]
-  orders     Order[]
+  owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  categories   Category[]
+  orders       Order[]
+  cashSessions CashSession[]
 
   @@map("restaurants")
 }
@@ -188,6 +189,14 @@ model Order {
   // pending -> preparing -> ready -> completed (ou cancelled a qualquer momento)
   status        String   @default("pending")
   totalCents    Int
+  // "cash" | "pix" | "card" — informado pela equipe ao fechar a mesa/pedido
+  // (não existe no checkout do cliente). `null` = ainda não informado; não
+  // entra na quebra por forma de pagamento do Caixa até ser preenchido.
+  paymentMethod String?
+  // Cliente (ou garçom) sinalizou que quer fechar a conta dessa mesa. Fica
+  // `true` até a equipe fechar a mesa (ver `closeTable`), quando os pedidos
+  // da mesa viram "completed" e o valor some do alerta.
+  billRequested Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -211,4 +220,29 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("order_items")
+}
+
+// Turno de caixa: abre com um valor inicial na gaveta (troco), acompanha o
+// faturamento em dinheiro do turno, e fecha com a contagem física informada
+// pelo operador — o saldo esperado (inicial + vendas em dinheiro) é
+// calculado automaticamente e comparado com o que foi contado.
+model CashSession {
+  id            String    @id @default(cuid())
+  restaurantId  String
+  openedAt      DateTime  @default(now())
+  openingCents  Int       @default(0)
+  closedAt      DateTime?
+  // Contagem física informada pelo operador ao fechar (`null` = turno ainda
+  // aberto).
+  closingCents  Int?
+  // Saldo esperado calculado no momento do fechamento (inicial + vendas em
+  // dinheiro do período do turno) — guardado para auditoria, já que pedidos
+  // futuros não devem mudar o resultado de um turno já fechado.
+  expectedCents Int?
+  // "open" | "closed"
+  status        String    @default("open")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("cash_sessions")
 }

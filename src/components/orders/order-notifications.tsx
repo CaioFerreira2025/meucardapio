@@ -6,7 +6,8 @@ import { toast } from "sonner";
 
 type OrderEvent =
   | { type: "new_order"; orderId: string }
-  | { type: "status_changed"; orderId: string; status: string };
+  | { type: "status_changed"; orderId: string; status: string }
+  | { type: "bill_requested"; orderId: string; tableNumber: string | null };
 
 // Escuta novos pedidos e mudanças de status via Server-Sent Events e
 // atualiza os dados do dashboard automaticamente. Montado uma vez no
@@ -33,6 +34,21 @@ export function OrderNotifications() {
             onClick: () => router.push("/dashboard/orders"),
           },
         });
+      }
+
+      if (payload.type === "bill_requested") {
+        toast.info(
+          payload.tableNumber
+            ? `Mesa ${payload.tableNumber} pediu a conta!`
+            : "Um cliente pediu a conta!",
+          {
+            description: "Toque para ver em Pedidos.",
+            action: {
+              label: "Ver",
+              onClick: () => router.push("/dashboard/orders"),
+            },
+          }
+        );
       }
 
       router.refresh();

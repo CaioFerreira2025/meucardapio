@@ -9,8 +9,10 @@ import {
   ExternalLink,
   LayoutDashboard,
   LogOut,
+  Smartphone,
   Users,
   UtensilsCrossed,
+  Wallet,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -18,10 +20,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DarkPortalRoot } from "@/components/theme/dark-portal-root";
 import { Logo } from "@/components/brand/logo";
 
+// `shortLabel` é usado só na barra de abas do mobile — com 7 itens agora
+// (antes eram 5), "Visão geral" quebrava em duas linhas e ficava
+// desalinhado com os outros. A sidebar do desktop continua usando `label`
+// por inteiro, sem nenhuma mudança visual lá.
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Visão geral", icon: LayoutDashboard },
+  {
+    href: "/dashboard",
+    label: "Visão geral",
+    shortLabel: "Visão",
+    icon: LayoutDashboard,
+  },
   { href: "/dashboard/menu", label: "Cardápio", icon: UtensilsCrossed },
   { href: "/dashboard/orders", label: "Pedidos", icon: ClipboardList },
+  { href: "/dashboard/comanda", label: "Comanda", icon: Smartphone },
+  { href: "/dashboard/caixa", label: "Caixa", icon: Wallet },
   { href: "/dashboard/customers", label: "Clientes", icon: Users },
   { href: "/dashboard/billing", label: "Cobrança", icon: CreditCard },
 ];
@@ -165,25 +178,35 @@ export function DashboardShell({
         </main>
       </div>
 
-      {/* Barra de abas — mobile */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-background/90 backdrop-blur-xl md:hidden">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-zinc-500 transition-colors",
-                isActive && "text-orange-400"
-              )}
-            >
-              <item.icon className="size-5" strokeWidth={isActive ? 2.5 : 2} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+      {/* Barra de abas — mobile. Rolagem horizontal (em vez de `flex-1`
+          dividindo a largura igualmente) porque agora são 7 abas — largura
+          fixa por item mantém ícone+texto legíveis em qualquer tela, e dá
+          pra chegar em todas as abas com um swipe em vez de espremer tudo.
+          Sombra na borda direita sinaliza que dá pra rolar pra ver mais. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-xl md:hidden">
+        <nav className="relative flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex w-[4.5rem] shrink-0 flex-col items-center gap-1 py-2.5 text-[11px] font-medium whitespace-nowrap text-zinc-500 transition-colors",
+                  isActive && "text-orange-400"
+                )}
+              >
+                <item.icon className="size-5" strokeWidth={isActive ? 2.5 : 2} />
+                {item.shortLabel ?? item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background/90 to-transparent"
+        />
+      </div>
     </DarkPortalRoot>
   );
 }

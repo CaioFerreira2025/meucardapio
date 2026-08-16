@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCents } from "@/lib/currency";
 import { ORDER_STATUSES, ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/order-status";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { RequestBillButton } from "@/components/orders/request-bill-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DarkPortalRoot } from "@/components/theme/dark-portal-root";
@@ -40,6 +41,9 @@ export default async function OrderTrackingPage(
     ? ORDER_STATUS_LABEL[order.status]
     : order.status;
   const isCancelled = order.status === "cancelled";
+  const canRequestBill = (["pending", "preparing", "ready"] as string[]).includes(
+    order.status
+  );
   const currentStepIndex = (
     HAPPY_PATH as readonly string[]
   ).indexOf(isOrderStatus(order.status) ? order.status : "pending");
@@ -146,10 +150,17 @@ export default async function OrderTrackingPage(
               </span>
             </div>
 
-            <Button
-              variant="outline"
-              render={<Link href={`/r/${slug}`}>Fazer novo pedido</Link>}
-            />
+            <div className="flex flex-col gap-2">
+              <RequestBillButton
+                orderId={order.id}
+                initialRequested={order.billRequested}
+                canRequest={canRequestBill}
+              />
+              <Button
+                variant="outline"
+                render={<Link href={`/r/${slug}`}>Fazer novo pedido</Link>}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
