@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTransition } from "react";
 import { signOut } from "next-auth/react";
 import {
   ClipboardList,
@@ -9,16 +10,19 @@ import {
   ExternalLink,
   LayoutDashboard,
   LogOut,
+  ShieldCheck,
   Smartphone,
   Users,
   UtensilsCrossed,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DarkPortalRoot } from "@/components/theme/dark-portal-root";
 import { Logo } from "@/components/brand/logo";
+import { stopImpersonation } from "@/app/admin/actions";
 
 // `shortLabel` é usado só na barra de abas do mobile — com 7 itens agora
 // (antes eram 5), "Visão geral" quebrava em duas linhas e ficava
@@ -63,13 +67,42 @@ function initials(name?: string | null, email?: string | null) {
 export function DashboardShell({
   user,
   restaurantSlug,
+  isAdmin = false,
+  isImpersonating = false,
+  impersonatedRestaurantName,
   children,
 }: {
   user: SessionUser;
   restaurantSlug: string;
+  isAdmin?: boolean;
+  isImpersonating?: boolean;
+  impersonatedRestaurantName?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+
+  function handleStopImpersonation() {
+    startTransition(async () => {
+      try {
+        await stopImpersonation();
+      } catch (error) {
+        // `redirect()` na Server Action lança um erro especial do Next
+        // (identificado pelo campo `digest`, não pela mensagem) pra
+        // navegar — não é uma falha de verdade, deixa passar.
+        const digest =
+          error && typeof error === "object" && "digest" in error
+            ? String((error as { digest?: unknown }).digest)
+            : "";
+        if (digest.startsWith("NEXT_REDIRECT")) {
+          throw error;
+        }
+        toast.error(
+          error instanceof Error ? error.message : "Erro ao sair do modo suporte."
+        );
+      }
+    });
+  }
 
   return (
     <DarkPortalRoot className="dark relative min-h-screen bg-background text-foreground">
@@ -81,8 +114,43 @@ export function DashboardShell({
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 
+      {/* Faixa de "modo suporte" — só existe quando um administrador está
+          operando o painel de um cliente (ver /admin). `fixed` (não
+          `sticky`) e cobrindo a largura toda, por cima até da sidebar do
+          desktop, pra nunca ficar ambíguo de quem é a conta que está sendo
+          editada. Sidebar, topbar mobile e conteúdo abaixo compensam a
+          altura fixa dela (h-10) quando ativa. */}
+      {isImpersonating && (
+        <div className="fixed inset-x-0 top-0 z-50 flex h-10 flex-wrap items-center justify-center gap-2 bg-violet-600 px-4 text-center text-sm font-medium text-white">
+          <ShieldCheck className="size-4 shrink-0" />
+          <span>
+            Modo suporte: visualizando{" "}
+            <strong>{impersonatedRestaurantName ?? "restaurante do cliente"}</strong>
+          </span>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleStopImpersonation}
+            className="ml-1 shrink-0 rounded-full bg-white/15 px-3 py-0.5 text-xs font-semibold transition-colors hover:bg-white/25 disabled:opacity-60"
+          >
+            {isPending ? "Saindo..." : "Sair do modo suporte"}
+          </button>
+        </div>
+      )}
+      {/* Espaçador em fluxo normal (a faixa acima é `fixed`, fora do
+          fluxo) — empurra a topbar mobile (sticky) e o conteúdo pra baixo
+          dos 2.5rem (h-10) da faixa; a sidebar desktop, por ser `fixed`,
+          precisa do próprio ajuste (`top-10` acima) em vez de depender
+          deste espaçador. */}
+      {isImpersonating && <div className="h-10" />}
+
       {/* Sidebar — desktop */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar/80 backdrop-blur-xl md:flex">
+      <aside
+        className={cn(
+          "fixed left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar/80 backdrop-blur-xl md:flex",
+          isImpersonating ? "top-10 bottom-0" : "inset-y-0"
+        )}
+      >
         <Link
           href="/dashboard"
           className="flex h-16 shrink-0 items-center border-b border-border px-5"
@@ -114,6 +182,16 @@ export function DashboardShell({
         </nav>
 
         <div className="flex flex-col gap-2 border-t border-border p-3">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-violet-300 transition-colors hover:bg-white/5"
+            >
+              <ShieldCheck className="size-4" strokeWidth={2} />
+              Painel Administrativo
+            </Link>
+          )}
+
           <Link
             href={`/r/${restaurantSlug}`}
             target="_blank"
@@ -149,11 +227,25 @@ export function DashboardShell({
       </aside>
 
       {/* Topbar — mobile */}
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xl md:hidden">
+      <header
+        className={cn(
+          "sticky z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xl md:hidden",
+          isImpersonating ? "top-10" : "top-0"
+        )}
+      >
         <Link href="/dashboard">
           <Logo size="sm" />
         </Link>
         <div className="flex items-center gap-1">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="rounded-md p-2 text-violet-300 hover:bg-white/5"
+              aria-label="Painel Administrativo"
+            >
+              <ShieldCheck className="size-4" />
+            </Link>
+          )}
           <Link
             href={`/r/${restaurantSlug}`}
             target="_blank"

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { emitOrderEvent } from "@/lib/order-events";
 
 const staffCartItemSchema = z.object({
@@ -47,7 +47,7 @@ export async function createStaffOrder(
     };
   }
 
-  const restaurant = await getRestaurantByOwnerId(session.user.id);
+  const restaurant = await getEffectiveRestaurant();
   if (!restaurant) {
     return { success: false, error: "Restaurante não encontrado" };
   }

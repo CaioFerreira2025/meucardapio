@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { subscribeToOrderEvents, type OrderEvent } from "@/lib/order-events";
 
 // Precisa ser sempre dinâmica (nunca cacheada/pré-renderizada) — é uma
@@ -14,7 +14,7 @@ export async function GET() {
     return new Response("Não autenticado", { status: 401 });
   }
 
-  const restaurant = await getRestaurantByOwnerId(session.user.id);
+  const restaurant = await getEffectiveRestaurant();
   if (!restaurant) {
     return new Response("Restaurante não encontrado", { status: 404 });
   }

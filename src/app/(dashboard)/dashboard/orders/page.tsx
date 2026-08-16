@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { getTablesAwaitingBill } from "@/lib/tables";
 import { pageTitle } from "@/config/brand";
 import { OrderColumn } from "@/components/orders/order-column";
@@ -14,8 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OrdersPage() {
-  const session = await auth();
-  const restaurant = await getRestaurantByOwnerId(session!.user!.id);
+  const restaurant = await getEffectiveRestaurant();
 
   const tablesAwaitingBill = await getTablesAwaitingBill(restaurant!.id);
 

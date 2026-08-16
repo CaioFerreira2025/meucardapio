@@ -14,7 +14,7 @@ import {
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { getTablesAwaitingBill } from "@/lib/tables";
 import { formatCents } from "@/lib/currency";
 import { getAppUrl } from "@/lib/site";
@@ -38,8 +38,9 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const session = await auth();
-  // O layout do dashboard já garante que o restaurante existe.
-  const restaurant = await getRestaurantByOwnerId(session!.user!.id);
+  // O layout do dashboard já garante que o restaurante existe (o próprio
+  // ou, em modo suporte, o do cliente impersonado).
+  const restaurant = await getEffectiveRestaurant();
   const restaurantId = restaurant!.id;
 
   const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));

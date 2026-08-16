@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { saveProductImage } from "@/lib/uploads";
 
 export async function POST(request: Request) {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   }
 
-  const restaurant = await getRestaurantByOwnerId(session.user.id);
+  const restaurant = await getEffectiveRestaurant();
   if (!restaurant) {
     return NextResponse.json({ error: "Restaurante não encontrado" }, { status: 404 });
   }

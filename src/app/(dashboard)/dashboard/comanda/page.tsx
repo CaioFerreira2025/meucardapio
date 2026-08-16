@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { pageTitle } from "@/config/brand";
 import { ComandaClient } from "@/components/comanda/comanda-client";
 
@@ -11,8 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ComandaPage() {
-  const session = await auth();
-  const restaurant = await getRestaurantByOwnerId(session!.user!.id);
+  const restaurant = await getEffectiveRestaurant();
 
   const categories = await prisma.category.findMany({
     where: { restaurantId: restaurant!.id },

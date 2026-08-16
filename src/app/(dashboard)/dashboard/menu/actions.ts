@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { parseCentsFromInput } from "@/lib/currency";
 import { deleteProductImage } from "@/lib/uploads";
 import { categorySchema, productSchema } from "@/lib/validations/restaurant";
@@ -14,7 +14,7 @@ async function requireRestaurant() {
   if (!session?.user?.id) {
     throw new Error("Não autenticado");
   }
-  const restaurant = await getRestaurantByOwnerId(session.user.id);
+  const restaurant = await getEffectiveRestaurant();
   if (!restaurant) {
     throw new Error("Restaurante não encontrado");
   }

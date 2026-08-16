@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { UtensilsCrossed } from "lucide-react";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { pageTitle } from "@/config/brand";
 import { CategoryFormDialog } from "@/components/menu/category-form-dialog";
 import { CategoryCard } from "@/components/menu/category-card";
@@ -13,8 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MenuPage() {
-  const session = await auth();
-  const restaurant = await getRestaurantByOwnerId(session!.user!.id);
+  const restaurant = await getEffectiveRestaurant();
 
   const categories = await prisma.category.findMany({
     where: { restaurantId: restaurant!.id },

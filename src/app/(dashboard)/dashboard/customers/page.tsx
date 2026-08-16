@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Users } from "lucide-react";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { pageTitle } from "@/config/brand";
 import { formatCents } from "@/lib/currency";
 import {
@@ -21,8 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CustomersPage() {
-  const session = await auth();
-  const restaurant = await getRestaurantByOwnerId(session!.user!.id);
+  const restaurant = await getEffectiveRestaurant();
 
   const orders = await prisma.order.findMany({
     where: { restaurantId: restaurant!.id },
@@ -42,6 +40,11 @@ export default async function CustomersPage() {
   // cadastro de cliente novo é criado, só uma leitura agregada sobre
   // `Order`, agrupada por telefone (identificador estável do cliente).
   type CustomerStats = {
+    // Chave de agrupamento (telefone, ou nome quando não há telefone — ex.:
+    // pedidos lançados pela Comanda do garçom, que não coletam telefone).
+    // Guardada à parte de `phone` porque `phone` sozinho pode se repetir
+    // (várias comandas sem telefone) e não pode virar `key` do React abaixo.
+    key: string;
     phone: string;
     name: string;
     orders: typeof orders;
@@ -66,6 +69,7 @@ export default async function CustomersPage() {
       }
     } else {
       byPhone.set(key, {
+        key,
         phone: order.customerPhone,
         name: order.customerName,
         orders: [order],
@@ -118,7 +122,7 @@ export default async function CustomersPage() {
                     ? Math.round(customer.totalSpentCents / customer.orderCount)
                     : 0;
                 return (
-                  <TableRow key={customer.phone} className="border-white/10">
+                  <TableRow key={customer.key} className="border-white/10">
                     <TableCell>
                       <p className="font-medium text-white">{customer.name}</p>
                       <p className="text-xs text-muted-foreground">{customer.phone}</p>

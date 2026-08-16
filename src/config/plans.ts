@@ -6,6 +6,10 @@ export type Plan = {
   name: string;
   description: string;
   price: string;
+  // Mesmo valor de `price`, mas em centavos — usado para somar receita
+  // (ex.: MRR no Painel Administrativo) sem precisar fazer parsing da
+  // string de exibição.
+  priceCents: number;
   priceId: string | undefined;
   features: string[];
   highlighted?: boolean;
@@ -17,6 +21,7 @@ export const PLANS: Plan[] = [
     name: "Starter",
     description: "Para começar e validar seu produto.",
     price: "R$ 29/mês",
+    priceCents: 2900,
     priceId: process.env.STRIPE_PRICE_ID_STARTER,
     features: ["1 usuário", "Recursos essenciais", "Suporte por email"],
   },
@@ -25,6 +30,7 @@ export const PLANS: Plan[] = [
     name: "Pro",
     description: "Para quem já está crescendo.",
     price: "R$ 99/mês",
+    priceCents: 9900,
     priceId: process.env.STRIPE_PRICE_ID_PRO,
     features: [
       "Usuários ilimitados",

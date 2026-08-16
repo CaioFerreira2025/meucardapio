@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getRestaurantByOwnerId } from "@/lib/restaurant";
+import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { emitOrderEvent } from "@/lib/order-events";
 import { isPaymentMethod } from "@/lib/payment-method";
 import { ACTIVE_ORDER_STATUSES } from "@/lib/tables";
@@ -27,7 +27,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
     throw new Error("Status inválido");
   }
 
-  const restaurant = await getRestaurantByOwnerId(session.user.id);
+  const restaurant = await getEffectiveRestaurant();
   if (!restaurant) {
     throw new Error("Restaurante não encontrado");
   }
@@ -57,7 +57,7 @@ export async function closeTable(tableNumber: string, paymentMethod: string) {
     throw new Error("Forma de pagamento inválida");
   }
 
-  const restaurant = await getRestaurantByOwnerId(session.user.id);
+  const restaurant = await getEffectiveRestaurant();
   if (!restaurant) {
     throw new Error("Restaurante não encontrado");
   }
