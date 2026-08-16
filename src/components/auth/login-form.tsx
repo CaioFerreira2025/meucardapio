@@ -21,6 +21,16 @@ import {
 } from "@/components/ui/card";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 
+// Suporte via WhatsApp para quem esqueceu a senha — não há fluxo de "esqueci
+// minha senha" automatizado ainda, então o link abre uma conversa já com a
+// mensagem pronta para o número de suporte (formato internacional, sem o "+").
+const SUPPORT_WHATSAPP_NUMBER = "5516991408438";
+const FORGOT_PASSWORD_MESSAGE =
+  "Olá, preciso de ajuda para recuperar minha senha no sistema.";
+const forgotPasswordWhatsAppUrl = `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  FORGOT_PASSWORD_MESSAGE
+)}`;
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,7 +88,17 @@ export function LoginForm() {
             )}
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Senha</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="password">Senha</Label>
+              <a
+                href={forgotPasswordWhatsAppUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-muted-foreground underline-offset-4 hover:text-orange-300 hover:underline"
+              >
+                Esqueceu a senha?
+              </a>
+            </div>
             <Input
               id="password"
               type="password"
