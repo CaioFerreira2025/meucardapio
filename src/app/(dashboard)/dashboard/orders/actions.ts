@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getEffectiveRestaurant } from "@/lib/restaurant-context";
-import { emitOrderEvent } from "@/lib/order-events";
 import { isPaymentMethod } from "@/lib/payment-method";
 import { ACTIVE_ORDER_STATUSES } from "@/lib/tables";
 
@@ -32,14 +31,10 @@ export async function updateOrderStatus(orderId: string, status: string) {
     throw new Error("Restaurante não encontrado");
   }
 
-  const result = await prisma.order.updateMany({
+  await prisma.order.updateMany({
     where: { id: orderId, restaurantId: restaurant.id },
     data: { status },
   });
-
-  if (result.count > 0) {
-    emitOrderEvent(restaurant.id, { type: "status_changed", orderId, status });
-  }
 
   revalidatePath("/dashboard/orders");
 }
@@ -79,14 +74,6 @@ export async function closeTable(tableNumber: string, paymentMethod: string) {
     where: { id: { in: activeOrders.map((o) => o.id) } },
     data: { status: "completed", paymentMethod, billRequested: false },
   });
-
-  for (const order of activeOrders) {
-    emitOrderEvent(restaurant.id, {
-      type: "status_changed",
-      orderId: order.id,
-      status: "completed",
-    });
-  }
 
   revalidatePath("/dashboard/orders");
   revalidatePath("/dashboard");

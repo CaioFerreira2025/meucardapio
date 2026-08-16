@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getEffectiveRestaurant } from "@/lib/restaurant-context";
-import { emitOrderEvent } from "@/lib/order-events";
 
 const staffCartItemSchema = z.object({
   productId: z.string().min(1),
@@ -26,11 +25,12 @@ export type StaffOrderResult =
   | { success: true; orderId: string }
   | { success: false; error: string };
 
-// Comanda mobile do garçom: cria o pedido no mesmo Order/OrderItem e com o
-// mesmo emitOrderEvent do checkout público (src/app/r/[slug]/actions.ts) —
-// só que autenticado como dono/operador do restaurante, em vez de vir do
-// cardápio público. Por isso o pedido aparece automaticamente na cozinha e
-// na Central de Pedidos, sem precisar mudar nada lá.
+// Comanda mobile do garçom: cria o pedido no mesmo Order/OrderItem do
+// checkout público (src/app/r/[slug]/actions.ts) — só que autenticado como
+// dono/operador do restaurante, em vez de vir do cardápio público. Por isso
+// o pedido aparece automaticamente na cozinha e na Central de Pedidos (via
+// polling, ver src/components/orders/order-notifications.tsx), sem
+// precisar mudar nada lá.
 export async function createStaffOrder(
   input: StaffOrderInput
 ): Promise<StaffOrderResult> {
@@ -98,8 +98,6 @@ export async function createStaffOrder(
       items: { create: orderItemsData },
     },
   });
-
-  emitOrderEvent(restaurant.id, { type: "new_order", orderId: order.id });
 
   revalidatePath("/dashboard/orders");
   revalidatePath("/dashboard");

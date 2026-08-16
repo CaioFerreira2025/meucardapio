@@ -3,7 +3,6 @@
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { emitOrderEvent } from "@/lib/order-events";
 
 const cartItemSchema = z.object({
   productId: z.string().min(1),
@@ -84,8 +83,6 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
       items: { create: orderItemsData },
     },
   });
-
-  emitOrderEvent(restaurant.id, { type: "new_order", orderId: order.id });
 
   return { success: true, orderId: order.id };
 }

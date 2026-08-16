@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
-import { emitOrderEvent } from "@/lib/order-events";
 
 // Status em que ainda faz sentido pedir a conta — do recebimento do pedido
 // até "Entregue" (completed). Só um pedido cancelado fica de fora: não há
@@ -52,12 +51,6 @@ export async function requestBill(orderId: string): Promise<RequestBillResult> {
       data: { billRequested: true },
     });
   }
-
-  emitOrderEvent(order.restaurantId, {
-    type: "bill_requested",
-    orderId: order.id,
-    tableNumber: order.tableNumber,
-  });
 
   revalidatePath("/dashboard/orders");
   revalidatePath("/dashboard");
