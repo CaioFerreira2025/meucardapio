@@ -14,7 +14,7 @@ export function PricingSection({
   isAuthenticated: boolean;
 }) {
   return (
-    <section className="relative bg-background py-24 sm:py-32">
+    <section className="relative overflow-hidden bg-background py-24 sm:py-32">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/2 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-600/[0.07] blur-[130px]" />
       </div>

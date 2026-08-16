@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { BRAND_NAME } from "@/config/brand";
 
 // Suporte via WhatsApp para quem esqueceu a senha — não há fluxo de "esqueci
 // minha senha" automatizado ainda, então o link abre uma conversa já com a
@@ -68,7 +69,7 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle className="text-white">Entrar</CardTitle>
         <CardDescription>
-          Acesse sua conta para continuar no CardápioPontoCom.
+          Acesse sua conta para continuar no {BRAND_NAME}.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>

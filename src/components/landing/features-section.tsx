@@ -68,7 +68,7 @@ const MINI_STATS = [
 
 export function FeaturesSection() {
   return (
-    <section className="relative bg-background py-24 sm:py-32">
+    <section className="relative overflow-hidden bg-background py-24 sm:py-32">
       <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
         <Reveal className="mx-auto mb-14 flex max-w-2xl flex-col items-center gap-3 text-center">
           <span className="text-sm font-semibold tracking-wide text-orange-400 uppercase">

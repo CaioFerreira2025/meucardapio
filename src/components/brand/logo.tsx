@@ -1,11 +1,10 @@
 import { cn } from "@/lib/utils";
-import { BRAND_WORDMARK } from "@/config/brand";
+import { BRAND_NAME } from "@/config/brand";
 
 // Símbolo da marca: não é um garfo/faca genérico — é um "ponto de conexão"
 // (anel + ponto), lembrando ao mesmo tempo um marcador de QR Code sendo
-// lido e o "Ponto" do nome CardápioPontoCom. Um único glifo abstrato,
-// simples o bastante pra continuar legível em 16px (favicon) e em 40px
-// (sidebar do painel).
+// lido. Um único glifo abstrato, simples o bastante pra continuar legível
+// em 16px (favicon) e em 40px (sidebar do painel).
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
@@ -57,24 +56,17 @@ export function LogoWordmark({
   className?: string;
 }) {
   return (
+    // Token semântico (não cor fixa) — assim o mesmo componente funciona
+    // tanto em fundo claro (login/cadastro) quanto escuro (painel, cardápio
+    // público, landing, planos), sempre com contraste correto em cada um.
     <span
       className={cn(
-        "font-semibold tracking-tight whitespace-nowrap lowercase",
+        "font-semibold tracking-tight whitespace-nowrap text-foreground",
         WORDMARK_TEXT_SIZE[size],
         className
       )}
     >
-      {/* Tokens semânticos (não cores fixas) — assim o mesmo componente
-          funciona tanto em fundo claro (login/cadastro) quanto escuro
-          (painel, cardápio público, landing, planos), sempre com contraste
-          correto em cada um. */}
-      <span className="text-foreground">{BRAND_WORDMARK.prefix}</span>
-      <span className="text-orange-500 dark:text-orange-400">
-        {BRAND_WORDMARK.dot}
-      </span>
-      <span className="font-medium text-muted-foreground">
-        {BRAND_WORDMARK.suffix}
-      </span>
+      {BRAND_NAME}
     </span>
   );
 }

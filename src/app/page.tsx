@@ -16,7 +16,16 @@ export default async function Home() {
     // escura com classes literais como bg-background/text-white) — ela só
     // garante que componentes compartilhados que usam tokens semânticos
     // (ex.: <Logo/>, <Card/>) renderizem certo quando reaproveitados aqui.
-    <div className="dark flex min-h-screen flex-col bg-background">
+    //
+    // `overflow-x-hidden` + `max-w-full` aqui são uma rede de segurança: a
+    // causa real da barra de rolagem horizontal no celular eram os círculos
+    // decorativos de brilho (blur) de cada seção — largos o bastante (ex.:
+    // w-[36rem]) para vazar para fora da tela em telas pequenas — sem um
+    // `overflow-hidden` no `<section>` pai para conter esse vazamento (só a
+    // Hero tinha). Isso já foi corrigido em cada seção (mesmo padrão da
+    // Hero), e este container garante que nenhum elemento decorativo futuro
+    // volte a estourar a largura da página.
+    <div className="dark flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background">
       <LandingHeader isAuthenticated={Boolean(session?.user)} />
       <main className="flex-1">
         <HeroSection />

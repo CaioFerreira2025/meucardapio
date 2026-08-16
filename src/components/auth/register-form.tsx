@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
+import { BRAND_NAME } from "@/config/brand";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -71,7 +72,7 @@ export function RegisterForm() {
       <CardHeader>
         <CardTitle className="text-white">Criar conta</CardTitle>
         <CardDescription>
-          Comece a usar o CardápioPontoCom gratuitamente.
+          Comece a usar o {BRAND_NAME} gratuitamente.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>

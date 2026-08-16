@@ -8,7 +8,7 @@ import { Reveal } from "@/components/landing/reveal";
 
 export function FinalCtaSection() {
   return (
-    <section className="relative bg-background pb-24 sm:pb-32">
+    <section className="relative overflow-hidden bg-background pb-24 sm:pb-32">
       <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
         <Reveal>
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 to-zinc-950 px-6 py-16 text-center shadow-2xl sm:px-16">
