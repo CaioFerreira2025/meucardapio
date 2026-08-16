@@ -214,6 +214,12 @@ model Order {
   // `true` até a equipe fechar a mesa (ver `closeTable`), quando os pedidos
   // da mesa viram "completed" e o valor some do alerta.
   billRequested Boolean  @default(false)
+  // Pedido "Entregue" que o lojista arquivou pra sumir do quadro kanban
+  // ativo (Central de pedidos), sem apagar do banco. Só é lido/gravado pela
+  // nova action `setOrderArchived` — não interfere no fluxo de status
+  // (pending -> preparing -> ready -> completed -> cancelled) nem em nenhum
+  // outro módulo.
+  archived      Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

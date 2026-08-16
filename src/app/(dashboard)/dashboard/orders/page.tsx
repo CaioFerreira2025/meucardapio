@@ -7,6 +7,7 @@ import { pageTitle } from "@/config/brand";
 import { OrderColumn } from "@/components/orders/order-column";
 import { OrderCard } from "@/components/orders/order-card";
 import { BillRequestsAlert } from "@/components/tables/bill-requests-alert";
+import { ArchivedOrdersSection } from "@/components/orders/archived-orders-section";
 
 export const metadata: Metadata = {
   title: pageTitle("Pedidos"),
@@ -31,7 +32,11 @@ export default async function OrdersPage() {
   const received = orders.filter((o) => o.status === "pending");
   const preparing = orders.filter((o) => o.status === "preparing");
   const ready = orders.filter((o) => o.status === "ready");
-  const delivered = orders.filter((o) => o.status === "completed");
+  // Pedidos "Entregues" que o lojista arquivou (botão "Ocultar pedido") saem
+  // do quadro ativo pra não empilhar infinitamente a coluna, mas continuam
+  // no banco e aparecem em "Ver histórico arquivado".
+  const delivered = orders.filter((o) => o.status === "completed" && !o.archived);
+  const archivedOrders = orders.filter((o) => o.status === "completed" && o.archived);
   const cancelled = orders.filter((o) => o.status === "cancelled");
 
   return (
@@ -44,6 +49,8 @@ export default async function OrdersPage() {
           Acompanhe cada pedido do recebimento até a entrega.
         </p>
       </div>
+
+      <ArchivedOrdersSection orders={archivedOrders} />
 
       <BillRequestsAlert tables={tablesAwaitingBill} />
 
