@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { MessageSquareText, Star } from "lucide-react";
+import { MessageCircle, MessageSquareText, Star } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { pageTitle } from "@/config/brand";
 import { cn } from "@/lib/utils";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
 
 export const metadata: Metadata = {
@@ -130,8 +132,39 @@ export default async function ReviewsPage() {
                     })}
                   </span>
                 </div>
+                {(review.name || review.phone) && (
+                  <p className="text-sm font-medium text-white">
+                    {review.name || "Cliente"}
+                    {review.phone && (
+                      <span className="font-normal text-muted-foreground">
+                        {" "}
+                        · {review.phone}
+                      </span>
+                    )}
+                  </p>
+                )}
                 {review.comment && (
                   <p className="text-sm text-foreground">{review.comment}</p>
+                )}
+                {review.phone && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-1 w-fit gap-1.5 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200"
+                    render={
+                      <a
+                        href={buildWhatsAppLink(
+                          review.phone,
+                          `Olá${review.name ? ` ${review.name}` : ""}! Aqui é do ${restaurant!.name}. Vimos sua avaliação e queríamos conversar com você a respeito.`
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      />
+                    }
+                  >
+                    <MessageCircle className="size-3.5" />
+                    Responder no WhatsApp
+                  </Button>
                 )}
               </CardContent>
             </Card>

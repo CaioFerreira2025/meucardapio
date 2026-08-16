@@ -46,6 +46,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatCents } from "@/lib/currency";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { ReviewModal } from "@/components/reviews/review-modal";
 import { createOrder } from "./actions";
 
@@ -82,15 +83,6 @@ function writeLastOrder(slug: string, info: LastOrderInfo) {
     // localStorage indisponível (modo privado, quota etc.) — não é
     // crítico, é só uma conveniência de continuidade entre visitas.
   }
-}
-
-// Monta um link wa.me a partir do telefone cadastrado em Configurações
-// (formato livre, ex.: "(11) 99999-9999") — mantém só os dígitos e
-// garante o DDI 55 (Brasil) na frente, que é o que o wa.me espera.
-function whatsappLink(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  const withCountryCode = digits.startsWith("55") ? digits : `55${digits}`;
-  return `https://wa.me/${withCountryCode}`;
 }
 
 type ComplementProduct = {
@@ -399,9 +391,14 @@ export function MenuClient({
               impressão de barra lateral espremida. Um Dialog centralizado
               resolve isso de raiz e dá bem mais espaço pros campos do
               formulário. Mesmo padrão de "modal alto com rolagem interna"
-              já usado no formulário de produto do painel (max-h-[90vh] +
-              overflow-hidden no modal, scroll só na área de conteúdo). */}
-          <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+              já usado no formulário de produto do painel (max-h + overflow-hidden
+              no modal, scroll só na área de conteúdo) — `max-h-[85dvh]`
+              (altura de viewport DINÂMICA) em vez de `vh` fixo: no celular,
+              quando o teclado abre pra preencher nome/telefone/observações,
+              a área visível encolhe; `dvh` acompanha isso e o rodapé com o
+              botão "Enviar pedido" (fora da área que rola, ver abaixo)
+              nunca fica escondido atrás do teclado. */}
+          <DialogContent className="flex max-h-[85dvh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
             <DialogHeader className="gap-0.5 p-4 pb-3">
               <DialogTitle className="text-white">
                 Seu pedido — {restaurantName}
@@ -583,16 +580,19 @@ export function MenuClient({
 
       {/* Sheet "Busca" — lista achatada de produtos de todas as categorias
           que batem com o texto digitado, com atalho de adicionar direto ao
-          carrinho sem precisar rolar até a seção da categoria. */}
+          carrinho sem precisar rolar até a seção da categoria.
+          `max-h-[85dvh]` (não `vh` fixo) pelo mesmo motivo do checkout
+          acima: o campo de busca abre o teclado no celular, e a altura
+          dinâmica acompanha o encolhimento da área visível. */}
       <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
-        <SheetContent side="bottom" className="max-h-[85vh]">
+        <SheetContent side="bottom" className="flex max-h-[85dvh] flex-col overflow-hidden">
           <SheetHeader>
             <SheetTitle className="text-white">Buscar no cardápio</SheetTitle>
             <SheetDescription>
               Digite o nome de um prato ou bebida.
             </SheetDescription>
           </SheetHeader>
-          <div className="flex flex-col gap-3 overflow-y-auto px-4 pb-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-4">
             <Input
               autoFocus
               value={searchQuery}
@@ -648,7 +648,10 @@ export function MenuClient({
           no localStorage do navegador após o último pedido) e um atalho
           pra acompanhar esse último pedido. */}
       <Sheet open={accountOpen} onOpenChange={setAccountOpen}>
-        <SheetContent side="bottom">
+        {/* `max-h-[85dvh]` + rolagem interna: os campos de nome/telefone
+            abrem o teclado no celular, mesmo motivo do checkout/busca
+            acima. */}
+        <SheetContent side="bottom" className="flex max-h-[85dvh] flex-col overflow-hidden">
           <SheetHeader>
             <SheetTitle className="text-white">Sua conta</SheetTitle>
             <SheetDescription>
@@ -656,7 +659,7 @@ export function MenuClient({
               próximo pedido.
             </SheetDescription>
           </SheetHeader>
-          <div className="flex flex-col gap-4 px-4 pb-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
             {lastOrder && (
               <Button
                 variant="outline"
@@ -713,7 +716,7 @@ export function MenuClient({
             </button>
             {restaurantPhone && (
               <a
-                href={whatsappLink(restaurantPhone)}
+                href={buildWhatsAppLink(restaurantPhone)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm font-medium text-white transition-colors hover:bg-white/5"

@@ -41,6 +41,12 @@ export const reviewSchema = z.object({
     .min(1, "Escolha de 1 a 5 estrelas")
     .max(5, "Escolha de 1 a 5 estrelas"),
   comment: z.string().max(500).optional().or(z.literal("")),
+  // Nome/telefone de quem avaliou — opcionais, mesmos limites de tamanho
+  // usados em customerName/customerPhone do checkout (checkoutSchema em
+  // src/app/r/[slug]/actions.ts), sem o `.min(...)` de lá porque aqui não
+  // são obrigatórios.
+  name: z.string().max(80).optional().or(z.literal("")),
+  phone: z.string().max(20).optional().or(z.literal("")),
 });
 export type ReviewInput = z.infer<typeof reviewSchema>;
 

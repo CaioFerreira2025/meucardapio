@@ -92,6 +92,8 @@ export type SubmitReviewInput = {
   slug: string;
   rating: number;
   comment?: string;
+  name?: string;
+  phone?: string;
 };
 
 export type SubmitReviewResult =
@@ -110,6 +112,8 @@ export async function submitReview(
   const parsed = reviewSchema.safeParse({
     rating: input.rating,
     comment: input.comment ?? "",
+    name: input.name ?? "",
+    phone: input.phone ?? "",
   });
   if (!parsed.success) {
     return {
@@ -131,6 +135,8 @@ export async function submitReview(
       restaurantId: restaurant.id,
       rating: parsed.data.rating,
       comment: parsed.data.comment || null,
+      name: parsed.data.name || null,
+      phone: parsed.data.phone || null,
     },
   });
 

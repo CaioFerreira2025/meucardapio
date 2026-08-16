@@ -278,6 +278,12 @@ model Review {
   // não depende disso para a validação de negócio.
   rating       Int
   comment      String?
+  // Nome/telefone de quem avaliou — opcionais (o cardápio público não tem
+  // cadastro/login de cliente, então não dá pra exigir). Quando o cliente
+  // informa o telefone, o painel (Avaliações) mostra um atalho "Responder
+  // no WhatsApp" com um link wa.me pré-preenchido.
+  name         String?
+  phone        String?
   createdAt    DateTime @default(now())
 
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
