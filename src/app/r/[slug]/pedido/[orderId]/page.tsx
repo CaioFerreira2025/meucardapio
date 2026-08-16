@@ -53,7 +53,11 @@ export default async function OrderTrackingPage(
   ).indexOf(isOrderStatus(order.status) ? order.status : "pending");
 
   return (
-    <DarkPortalRoot className="dark relative min-h-screen bg-background text-foreground">
+    // Mesmo ajuste de min-h-dvh + overflow-x-hidden do cardápio público
+    // (ver comentário em src/app/r/[slug]/page.tsx) — esta também é uma
+    // tela do cliente, acessada logo depois do checkout ou pelo atalho
+    // "Conta" do menu inferior.
+    <DarkPortalRoot className="dark relative min-h-dvh w-full overflow-x-hidden bg-background text-foreground">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"

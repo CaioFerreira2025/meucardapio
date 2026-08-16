@@ -276,7 +276,12 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        <QrCodeCard url={publicMenuUrl} slug={restaurant!.slug} />
+        <QrCodeCard
+          url={publicMenuUrl}
+          slug={restaurant!.slug}
+          logoUrl={restaurant!.logoUrl}
+          restaurantName={restaurant!.name}
+        />
       </div>
     </div>
   );

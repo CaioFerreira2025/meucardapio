@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import NextImage from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, QrCode } from "lucide-react";
 import { toast } from "sonner";
@@ -34,7 +35,17 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(objectUrl);
 }
 
-export function QrCodeCard({ url, slug }: { url: string; slug: string }) {
+export function QrCodeCard({
+  url,
+  slug,
+  logoUrl,
+  restaurantName,
+}: {
+  url: string;
+  slug: string;
+  logoUrl?: string | null;
+  restaurantName: string;
+}) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   function getSvgMarkup() {
@@ -116,7 +127,23 @@ export function QrCodeCard({ url, slug }: { url: string; slug: string }) {
       </CardHeader>
 
       <div className="flex flex-col items-center gap-4 px-(--card-spacing) sm:flex-row sm:items-center">
-        <div className="flex size-36 shrink-0 items-center justify-center rounded-xl bg-white p-3 ring-1 ring-white/10">
+        <div className="relative flex size-36 shrink-0 items-center justify-center rounded-xl bg-white p-3 ring-1 ring-white/10">
+          {/* Logo do lojista em destaque na tela do QR Code — só aparece
+              se ele já fez upload em Configurações; não é embutida DENTRO
+              do SVG do QR (evita qualquer risco de atrapalhar a leitura do
+              código pela câmera), fica como selo sobreposto no canto. */}
+          {logoUrl && (
+            <div className="absolute -top-2.5 -left-2.5 flex size-10 items-center justify-center overflow-hidden rounded-full bg-white shadow-md ring-2 ring-background">
+              <NextImage
+                src={logoUrl}
+                alt={restaurantName}
+                width={40}
+                height={40}
+                className="size-full object-cover"
+                unoptimized
+              />
+            </div>
+          )}
           <QRCodeSVG
             ref={svgRef}
             value={url}

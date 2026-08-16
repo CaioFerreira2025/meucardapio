@@ -3,7 +3,20 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ImageIcon, Minus, Plus, ShoppingCart, Sparkles } from "lucide-react";
+import {
+  ClipboardList,
+  ImageIcon,
+  MessageCircle,
+  Minus,
+  MoreHorizontal,
+  Plus,
+  Search,
+  ShoppingCart,
+  Sparkles,
+  Star,
+  User,
+  UtensilsCrossed,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,8 +38,60 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { formatCents } from "@/lib/currency";
+import { ReviewModal } from "@/components/reviews/review-modal";
 import { createOrder } from "./actions";
+
+// Guarda o último pedido feito nesta loja (não um "login" de verdade — o
+// cardápio público não tem cadastro de cliente) só pra dar continuidade
+// entre visitas: pré-preencher nome/telefone no próximo pedido e oferecer
+// um atalho de volta pro acompanhamento do último pedido, na aba "Conta"
+// do menu inferior.
+type LastOrderInfo = {
+  orderId: string;
+  customerName: string;
+  customerPhone: string;
+};
+
+function lastOrderStorageKey(slug: string) {
+  return `cardapio:${slug}:lastOrder`;
+}
+
+function readLastOrder(slug: string): LastOrderInfo | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(lastOrderStorageKey(slug));
+    return raw ? (JSON.parse(raw) as LastOrderInfo) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLastOrder(slug: string, info: LastOrderInfo) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(lastOrderStorageKey(slug), JSON.stringify(info));
+  } catch {
+    // localStorage indisponível (modo privado, quota etc.) — não é
+    // crítico, é só uma conveniência de continuidade entre visitas.
+  }
+}
+
+// Monta um link wa.me a partir do telefone cadastrado em Configurações
+// (formato livre, ex.: "(11) 99999-9999") — mantém só os dígitos e
+// garante o DDI 55 (Brasil) na frente, que é o que o wa.me espera.
+function whatsappLink(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  const withCountryCode = digits.startsWith("55") ? digits : `55${digits}`;
+  return `https://wa.me/${withCountryCode}`;
+}
 
 type ComplementProduct = {
   id: string;
@@ -55,19 +120,37 @@ type CartLine = { product: Product; quantity: number };
 export function MenuClient({
   slug,
   restaurantName,
+  restaurantPhone,
   isOpen,
   categories,
 }: {
   slug: string;
   restaurantName: string;
+  restaurantPhone?: string | null;
   isOpen: boolean;
   categories: Category[];
 }) {
   const router = useRouter();
   const [cart, setCart] = useState<Record<string, CartLine>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  // "Conta" (menu inferior) — sem cadastro/login de cliente, só
+  // continuidade entre visitas: nome/telefone e último pedido lidos do
+  // localStorage com inicializador preguiçoso do useState (roda 1x, na
+  // primeira renderização no client). Diferente de um useEffect, isso não
+  // causa re-render em cascata — e não há risco de divergir da
+  // renderização do servidor porque esse estado só é usado dentro do
+  // Dialog de checkout e do Sheet "Conta", ambos fechados por padrão (o
+  // Base UI não monta o conteúdo deles no DOM até serem abertos).
+  const [lastOrder, setLastOrder] = useState<LastOrderInfo | null>(() =>
+    readLastOrder(slug)
+  );
+  const [customerName, setCustomerName] = useState(() => readLastOrder(slug)?.customerName ?? "");
+  const [customerPhone, setCustomerPhone] = useState(() => readLastOrder(slug)?.customerPhone ?? "");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [tableNumber, setTableNumber] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -156,8 +239,34 @@ export function MenuClient({
       return;
     }
 
+    const info: LastOrderInfo = {
+      orderId: result.orderId,
+      customerName,
+      customerPhone,
+    };
+    writeLastOrder(slug, info);
+    setLastOrder(info);
+
     router.push(`/r/${slug}/pedido/${result.orderId}`);
   }
+
+  // Resultado da busca (aba "Busca" do menu inferior) — lista achatada de
+  // produtos de todas as categorias cujo nome bate com a busca. Sem
+  // scroll-spy nem filtro na página principal: é uma lista separada dentro
+  // do próprio sheet, com um atalho de "Adicionar" direto ao carrinho.
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+    const results: { product: Product; categoryName: string }[] = [];
+    for (const category of categories) {
+      for (const product of category.products) {
+        if (product.name.toLowerCase().includes(query)) {
+          results.push({ product, categoryName: category.name });
+        }
+      }
+    }
+    return results;
+  }, [categories, searchQuery]);
 
   return (
     <div className="flex flex-col gap-10 pb-28">
@@ -167,8 +276,36 @@ export function MenuClient({
         </div>
       )}
 
+      {/* Navegação rápida por categoria — pílulas com rolagem horizontal,
+          estilo app. `sticky` gruda no topo assim que o cliente rola além
+          do cabeçalho do restaurante; cada pílula é só uma âncora para a
+          seção correspondente (sem scroll-spy, mantém simples e sem
+          nenhuma dependência de IntersectionObserver). `scroll-mt-16` em
+          cada `<section>` abaixo compensa essa barra fixa ao pular pra lá,
+          pra o título da categoria não ficar escondido atrás dela. */}
+      {categories.length > 1 && (
+        <nav
+          aria-label="Categorias"
+          className="sticky top-0 z-20 -mx-4 flex gap-2 overflow-x-auto bg-background/90 px-4 py-2.5 backdrop-blur-xl [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden"
+        >
+          {categories.map((category) => (
+            <a
+              key={category.id}
+              href={`#categoria-${category.id}`}
+              className="shrink-0 rounded-full bg-white/[0.04] px-4 py-1.5 text-sm font-medium whitespace-nowrap text-zinc-300 ring-1 ring-white/10 transition-colors hover:bg-white/[0.08] hover:text-white"
+            >
+              {category.name}
+            </a>
+          ))}
+        </nav>
+      )}
+
       {categories.map((category) => (
-        <section key={category.id} className="flex flex-col gap-3">
+        <section
+          key={category.id}
+          id={`categoria-${category.id}`}
+          className="flex scroll-mt-16 flex-col gap-3"
+        >
           <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-white">
             {category.name}
             <span className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
@@ -236,7 +373,11 @@ export function MenuClient({
             render={
               <button
                 type="button"
-                className="fixed bottom-5 right-4 z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-orange-950/40 ring-1 ring-white/10 transition-transform active:scale-95 sm:bottom-8 sm:right-8"
+                // `bottom-20` (em vez do `bottom-5` original) dá espaço pro
+                // menu inferior fixo, que ocupa essa faixa no mobile; a
+                // partir de `md` o menu inferior já some (`md:hidden`
+                // abaixo), então volta a ficar mais perto da borda.
+                className="fixed right-4 bottom-20 z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-orange-950/40 ring-1 ring-white/10 transition-transform active:scale-95 md:right-8 md:bottom-8"
               >
                 <span className="relative flex items-center">
                   <ShoppingCart className="size-5" />
@@ -400,6 +541,192 @@ export function MenuClient({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Menu inferior fixo, estilo app nativo — só no mobile (`md:hidden`);
+          no desktop a navegação por pílulas de categoria já cobre a
+          necessidade de navegação rápida, sem precisar de uma barra fixa
+          ocupando espaço numa tela grande. */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-background/95 backdrop-blur-xl md:hidden">
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-orange-400"
+        >
+          <UtensilsCrossed className="size-5" strokeWidth={2.5} />
+          Cardápio
+        </button>
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-zinc-500 transition-colors hover:text-white"
+        >
+          <Search className="size-5" strokeWidth={2} />
+          Busca
+        </button>
+        <button
+          type="button"
+          onClick={() => setAccountOpen(true)}
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-zinc-500 transition-colors hover:text-white"
+        >
+          <User className="size-5" strokeWidth={2} />
+          Conta
+        </button>
+        <button
+          type="button"
+          onClick={() => setMoreOpen(true)}
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-zinc-500 transition-colors hover:text-white"
+        >
+          <MoreHorizontal className="size-5" strokeWidth={2} />
+          Mais
+        </button>
+      </nav>
+
+      {/* Sheet "Busca" — lista achatada de produtos de todas as categorias
+          que batem com o texto digitado, com atalho de adicionar direto ao
+          carrinho sem precisar rolar até a seção da categoria. */}
+      <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+        <SheetContent side="bottom" className="max-h-[85vh]">
+          <SheetHeader>
+            <SheetTitle className="text-white">Buscar no cardápio</SheetTitle>
+            <SheetDescription>
+              Digite o nome de um prato ou bebida.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col gap-3 overflow-y-auto px-4 pb-4">
+            <Input
+              autoFocus
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Ex.: Classic Burger"
+            />
+            {searchQuery.trim() === "" ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                Digite para buscar no cardápio.
+              </p>
+            ) : searchResults.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                Nenhum item encontrado para &quot;{searchQuery}&quot;.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {searchResults.map(({ product, categoryName }) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center justify-between gap-3 rounded-lg px-2 py-2.5"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-white">
+                        {product.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {categoryName} · {formatCents(product.priceCents)}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!isOpen}
+                      className="shrink-0 gap-1 rounded-full"
+                      onClick={() => {
+                        addToCart(product);
+                        toast.success(`${product.name} adicionado ao carrinho.`);
+                      }}
+                    >
+                      <Plus className="size-3.5" />
+                      Adicionar
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Sheet "Conta" — sem cadastro/login de cliente, então é só
+          continuidade entre visitas: nome/telefone pré-preenchidos (salvos
+          no localStorage do navegador após o último pedido) e um atalho
+          pra acompanhar esse último pedido. */}
+      <Sheet open={accountOpen} onOpenChange={setAccountOpen}>
+        <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle className="text-white">Sua conta</SheetTitle>
+            <SheetDescription>
+              Seus dados ficam salvos neste navegador para agilizar o
+              próximo pedido.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col gap-4 px-4 pb-4">
+            {lastOrder && (
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => {
+                  setAccountOpen(false);
+                  router.push(`/r/${slug}/pedido/${lastOrder.orderId}`);
+                }}
+              >
+                <ClipboardList className="size-4" />
+                Acompanhar meu último pedido
+              </Button>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="account-name">Seu nome</Label>
+              <Input
+                id="account-name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="account-phone">Telefone / WhatsApp</Label>
+              <Input
+                id="account-phone"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+              />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Sheet "Mais" — avaliação da experiência (o pedido original desta
+          tarefa) e um atalho de WhatsApp pro restaurante, quando o
+          telefone está configurado em Configurações. */}
+      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+        <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle className="text-white">Mais opções</SheetTitle>
+            <SheetDescription>{restaurantName}</SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col gap-1 px-4 pb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setMoreOpen(false);
+                setReviewOpen(true);
+              }}
+              className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm font-medium text-white transition-colors hover:bg-white/5"
+            >
+              <Star className="size-4 text-orange-300" />
+              Avaliar experiência
+            </button>
+            {restaurantPhone && (
+              <a
+                href={whatsappLink(restaurantPhone)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm font-medium text-white transition-colors hover:bg-white/5"
+              >
+                <MessageCircle className="size-4 text-emerald-400" />
+                Chamar no WhatsApp
+              </a>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <ReviewModal slug={slug} open={reviewOpen} onOpenChange={setReviewOpen} />
     </div>
   );
 }

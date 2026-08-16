@@ -136,6 +136,10 @@ model Restaurant {
   phone       String?
   address     String?
   isOpen      Boolean  @default(true)
+  // Logo do lojista — mesmo formato de armazenamento das fotos de produto
+  // (data URL base64 direto no banco, ver src/lib/uploads.ts):
+  // `null` = nenhuma logo enviada ainda, cai no ícone genérico da marca.
+  logoUrl     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -143,6 +147,7 @@ model Restaurant {
   categories   Category[]
   orders       Order[]
   cashSessions CashSession[]
+  reviews      Review[]
 
   @@map("restaurants")
 }
@@ -257,4 +262,25 @@ model CashSession {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@map("cash_sessions")
+}
+
+// Avaliação da experiência, enviada pelo cliente no cardápio público
+// (menu inferior -> "Mais" -> "Avaliar experiência"). Sem cadastro/login do
+// cliente, então não há um "autor" identificável além do que ele mesmo
+// digita — mantemos simples de propósito: 1 nota (1 a 5) e um comentário
+// opcional, sem vínculo obrigatório com um pedido específico (o cliente
+// pode avaliar a experiência geral, não só um pedido).
+model Review {
+  id           String   @id @default(cuid())
+  restaurantId String
+  // 1 a 5 — validado na Server Action (submitReview) antes de chegar aqui;
+  // sem `@@check` porque o driver do Postgres usado no Prisma Client aqui
+  // não depende disso para a validação de negócio.
+  rating       Int
+  comment      String?
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
 }

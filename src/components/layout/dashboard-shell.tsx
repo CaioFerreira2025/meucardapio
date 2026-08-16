@@ -10,8 +10,10 @@ import {
   ExternalLink,
   LayoutDashboard,
   LogOut,
+  Settings,
   ShieldCheck,
   Smartphone,
+  Star,
   Users,
   UtensilsCrossed,
   Wallet,
@@ -40,7 +42,9 @@ const NAV_ITEMS = [
   { href: "/dashboard/comanda", label: "Comanda", icon: Smartphone },
   { href: "/dashboard/caixa", label: "Caixa", icon: Wallet },
   { href: "/dashboard/customers", label: "Clientes", icon: Users },
+  { href: "/dashboard/reviews", label: "Avaliações", icon: Star },
   { href: "/dashboard/billing", label: "Cobrança", icon: CreditCard },
+  { href: "/dashboard/settings", label: "Configurações", shortLabel: "Config.", icon: Settings },
 ];
 
 type SessionUser = {

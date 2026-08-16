@@ -26,7 +26,9 @@ export const getPublicMenuBySlug = cache((slug: string) => {
       name: true,
       description: true,
       address: true,
+      phone: true,
       isOpen: true,
+      logoUrl: true,
       categories: {
         orderBy: { position: "asc" },
         select: {

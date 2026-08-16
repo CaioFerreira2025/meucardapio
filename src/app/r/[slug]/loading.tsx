@@ -15,7 +15,11 @@ import { DarkPortalRoot } from "@/components/theme/dark-portal-root";
 // ou lógica de negócio muda.
 export default function PublicMenuLoading() {
   return (
-    <DarkPortalRoot className="dark relative min-h-screen bg-background text-foreground">
+    // Mesmo ajuste de min-h-dvh + overflow-x-hidden do page.tsx real (ver
+    // comentário lá) — o esqueleto de loading precisa ter exatamente o
+    // mesmo comportamento de altura, senão a página "pula" de tamanho
+    // assim que o conteúdo de verdade chega.
+    <DarkPortalRoot className="dark relative min-h-dvh w-full overflow-x-hidden bg-background text-foreground">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"

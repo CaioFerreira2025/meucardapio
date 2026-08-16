@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { MapPin, UtensilsCrossed } from "lucide-react";
 
@@ -35,7 +36,16 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
   );
 
   return (
-    <DarkPortalRoot className="dark relative min-h-screen bg-background text-foreground">
+    // `min-h-dvh` (dynamic viewport height) em vez de `min-h-screen`
+    // (100vh fixo): no Chrome/Safari mobile e em WebViews de leitor de QR
+    // Code, a barra de endereço mostra/esconde ao rolar e muda a altura
+    // visível real — `100vh` fica "preso" na medida inicial, sobrando um
+    // bloco branco (ou cortando conteúdo) quando a barra reaparece.
+    // `100dvh` acompanha essa mudança automaticamente. `overflow-x-hidden`
+    // é rede de segurança contra qualquer filho que vaze da largura da
+    // tela (o cardápio já não tinha isso antes, mas outras páginas do
+    // projeto — ver src/app/page.tsx — já usam o mesmo padrão).
+    <DarkPortalRoot className="dark relative min-h-dvh w-full overflow-x-hidden bg-background text-foreground">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"
@@ -47,9 +57,27 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
       <div className="relative mx-auto flex w-full max-w-3xl flex-col px-4 sm:px-6">
         {/* Hero do restaurante */}
         <header className="flex flex-col items-center gap-3 pt-10 pb-6 text-center sm:pt-14">
-          <span className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-rose-500 shadow-xl shadow-orange-600/30 ring-1 ring-white/10">
-            <UtensilsCrossed className="size-7 text-white" strokeWidth={2} />
-          </span>
+          {/* Logo do lojista em destaque no topo do cardápio — substitui o
+              ícone genérico assim que ele faz upload em Configurações
+              (mesmo formato de imagem armazenada em Restaurant.logoUrl das
+              fotos de produto). Sem logo, mantém o selo genérico de sempre,
+              sem nenhuma mudança visual pra quem ainda não configurou. */}
+          {restaurant.logoUrl ? (
+            <span className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-xl shadow-orange-600/20 ring-1 ring-white/10">
+              <Image
+                src={restaurant.logoUrl}
+                alt={restaurant.name}
+                fill
+                sizes="64px"
+                className="object-cover"
+                unoptimized
+              />
+            </span>
+          ) : (
+            <span className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-rose-500 shadow-xl shadow-orange-600/30 ring-1 ring-white/10">
+              <UtensilsCrossed className="size-7 text-white" strokeWidth={2} />
+            </span>
+          )}
           <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             {restaurant.name}
           </h1>
@@ -90,6 +118,7 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
           <MenuClient
             slug={restaurant.slug}
             restaurantName={restaurant.name}
+            restaurantPhone={restaurant.phone}
             isOpen={restaurant.isOpen}
             categories={categoriesWithProducts}
           />

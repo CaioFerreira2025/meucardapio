@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { reviewSchema } from "@/lib/validations/restaurant";
 
 const cartItemSchema = z.object({
   productId: z.string().min(1),
@@ -85,4 +86,53 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
   });
 
   return { success: true, orderId: order.id };
+}
+
+export type SubmitReviewInput = {
+  slug: string;
+  rating: number;
+  comment?: string;
+};
+
+export type SubmitReviewResult =
+  | { success: true }
+  | { success: false; error: string };
+
+// Avaliação da experiência — cliente sem cadastro/login, acionada pelo menu
+// inferior do cardápio público (Mais -> Avaliar experiência). Cada envio
+// cria uma linha nova em Review; não há limite de 1 por cliente (não temos
+// como identificar o cliente de forma confiável sem login) nem vínculo
+// obrigatório com um pedido específico — o cliente pode avaliar mesmo sem
+// ter finalizado um pedido ainda.
+export async function submitReview(
+  input: SubmitReviewInput
+): Promise<SubmitReviewResult> {
+  const parsed = reviewSchema.safeParse({
+    rating: input.rating,
+    comment: input.comment ?? "",
+  });
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Dados inválidos",
+    };
+  }
+
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { slug: input.slug },
+    select: { id: true },
+  });
+  if (!restaurant) {
+    return { success: false, error: "Restaurante não encontrado" };
+  }
+
+  await prisma.review.create({
+    data: {
+      restaurantId: restaurant.id,
+      rating: parsed.data.rating,
+      comment: parsed.data.comment || null,
+    },
+  });
+
+  return { success: true };
 }

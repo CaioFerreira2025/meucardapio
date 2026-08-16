@@ -16,6 +16,34 @@ export const restaurantSchema = z.object({
 });
 export type RestaurantInput = z.infer<typeof restaurantSchema>;
 
+// Formulário de Configurações (edição, diferente do onboarding acima: sem
+// `slug`, que não pode ser trocado depois de criado — o QR Code e os links
+// já impressos apontam pra ele). Inclui a logo, que segue o mesmo formato
+// de armazenamento das fotos de produto (data URL base64 — ver
+// src/lib/uploads.ts), daí o limite de tamanho igual ao de `imageUrl` em
+// productSchema.
+export const restaurantSettingsSchema = z.object({
+  name: z.string().min(2, "Informe o nome do restaurante").max(80),
+  phone: z.string().max(20).optional().or(z.literal("")),
+  address: z.string().max(200).optional().or(z.literal("")),
+  description: z.string().max(300).optional().or(z.literal("")),
+  logoUrl: z.string().max(2_200_000).optional().or(z.literal("")),
+});
+export type RestaurantSettingsInput = z.infer<typeof restaurantSettingsSchema>;
+
+// Avaliação da experiência (cliente, cardápio público — sem login). Nota
+// obrigatória de 1 a 5; comentário opcional e curto (é um comentário
+// rápido pós-atendimento, não uma resenha).
+export const reviewSchema = z.object({
+  rating: z
+    .number()
+    .int()
+    .min(1, "Escolha de 1 a 5 estrelas")
+    .max(5, "Escolha de 1 a 5 estrelas"),
+  comment: z.string().max(500).optional().or(z.literal("")),
+});
+export type ReviewInput = z.infer<typeof reviewSchema>;
+
 export const categorySchema = z.object({
   name: z.string().min(2, "Informe o nome da categoria").max(50),
 });
