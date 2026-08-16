@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Users, Wallet } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
-import { getPlanByPriceId } from "@/config/plans";
+import { getPlanByOfferId } from "@/config/plans";
 import { formatCents } from "@/lib/currency";
 import { pageTitle } from "@/config/brand";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -30,7 +30,7 @@ export default async function AdminPage() {
 
   const subscribers = restaurants.map((restaurant) => {
     const subscription = restaurant.owner.subscription;
-    const plan = getPlanByPriceId(subscription?.stripePriceId);
+    const plan = getPlanByOfferId(subscription?.caktoOfferId);
     return {
       id: restaurant.id,
       name: restaurant.name,

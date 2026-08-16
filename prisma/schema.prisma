@@ -84,25 +84,37 @@ model VerificationToken {
 }
 
 // ---------------------------------------------------------------------------
-// Cobrança (Fase 2 — Stripe)
+// Cobrança (Fase 2 — Cakto)
 // ---------------------------------------------------------------------------
 
 model Subscription {
-  id                   String   @id @default(cuid())
-  userId               String   @unique
-  stripeSubscriptionId String   @unique
-  stripePriceId        String
-  // Espelha o `status` de uma Subscription do Stripe (trialing, active,
-  // past_due, canceled, unpaid, incomplete, incomplete_expired, paused).
-  // SQLite não suporta enum nativo no Prisma — validamos o valor em
-  // src/lib/stripe.ts antes de gravar. Ao migrar para Postgres, é possível
-  // trocar para um `enum` do Prisma se preferir.
-  // https://stripe.com/docs/api/subscriptions/object#subscription_object-status
-  status               String
-  currentPeriodEnd     DateTime
-  cancelAtPeriodEnd    Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Campos antigos da integração com o Stripe (substituída pela Cakto).
+  // Ficam como `String?` opcionais em vez de removidos: assinaturas antigas
+  // criadas enquanto o Stripe ainda estava ativo continuam com esses dados
+  // intactos — nada é apagado numa migração destrutiva. Assinaturas novas
+  // não preenchem mais esses dois campos.
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+
+  // Campos da integração com a Cakto (gateway atual — Pix, cartão de
+  // crédito e débito). `caktoOfferId` identifica qual plano (Starter/Pro)
+  // foi assinado, equivalente ao antigo `stripePriceId` — ver
+  // src/config/plans.ts.
+  caktoSubscriptionId String? @unique
+  caktoOfferId        String?
+
+  // Espelha o status recebido nos eventos de webhook (active, past_due,
+  // canceled, paused — ver src/app/api/webhooks/cakto/route.ts). Mesmo
+  // vocabulário que já era usado com o Stripe, então a tela de Cobrança e o
+  // Painel Administrativo não precisaram mudar.
+  status            String
+  currentPeriodEnd  DateTime
+  cancelAtPeriodEnd Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

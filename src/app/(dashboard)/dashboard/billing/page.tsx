@@ -4,7 +4,7 @@ import { Check, CreditCard, Sparkles } from "lucide-react";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getPlanByPriceId } from "@/config/plans";
+import { getPlanByOfferId } from "@/config/plans";
 import { pageTitle } from "@/config/brand";
 import {
   Card,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ManageBillingButton } from "@/components/billing/manage-billing-button";
+import { CancelSubscriptionButton } from "@/components/billing/cancel-subscription-button";
 
 export const metadata: Metadata = {
   title: pageTitle("Cobrança"),
@@ -54,7 +54,7 @@ export default async function BillingPage() {
       })
     : null;
 
-  const plan = getPlanByPriceId(subscription?.stripePriceId);
+  const plan = getPlanByOfferId(subscription?.caktoOfferId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -119,8 +119,8 @@ export default async function BillingPage() {
           </CardContent>
         )}
         <CardFooter>
-          {subscription ? (
-            <ManageBillingButton />
+          {subscription && subscription.status !== "canceled" ? (
+            <CancelSubscriptionButton />
           ) : (
             <Button
               className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"

@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MapPin, UtensilsCrossed } from "lucide-react";
 
-import { prisma } from "@/lib/prisma";
-import { getRestaurantBySlug } from "@/lib/restaurant";
+import { getPublicMenuBySlug } from "@/lib/restaurant";
 import { cn } from "@/lib/utils";
 import { pageTitle } from "@/config/brand";
 import { DarkPortalRoot } from "@/components/theme/dark-portal-root";
@@ -13,7 +12,7 @@ export async function generateMetadata(
   props: PageProps<"/r/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const restaurant = await getRestaurantBySlug(slug);
+  const restaurant = await getPublicMenuBySlug(slug);
   return {
     title: restaurant ? pageTitle(restaurant.name) : "Cardápio não encontrado",
   };
@@ -21,42 +20,19 @@ export async function generateMetadata(
 
 export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
   const { slug } = await props.params;
-  const restaurant = await getRestaurantBySlug(slug);
+  // Uma consulta só (restaurante + categorias + produtos + complementos) —
+  // `cache()` em getPublicMenuBySlug garante que essa mesma chamada,
+  // repetida aqui e em generateMetadata acima, vira 1 ida ao banco só, não
+  // 2. Ver comentário na definição da função.
+  const restaurant = await getPublicMenuBySlug(slug);
 
   if (!restaurant) {
     notFound();
   }
 
-  const categories = await prisma.category.findMany({
-    where: { restaurantId: restaurant.id },
-    orderBy: { position: "asc" },
-    // `select` explícito em vez do objeto inteiro do produto — o cardápio
-    // público não usa custo, disponibilidade (já filtrada), datas etc., só
-    // pesar menos a consulta e a serialização da resposta.
-    select: {
-      id: true,
-      name: true,
-      products: {
-        where: { isAvailable: true },
-        orderBy: { position: "asc" },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          priceCents: true,
-          imageUrl: true,
-          // "Venda mais" — só sugere complementares que também estão
-          // disponíveis no momento.
-          complements: {
-            where: { isAvailable: true },
-            select: { id: true, name: true, priceCents: true, imageUrl: true },
-          },
-        },
-      },
-    },
-  });
-
-  const categoriesWithProducts = categories.filter((c) => c.products.length > 0);
+  const categoriesWithProducts = restaurant.categories.filter(
+    (c) => c.products.length > 0
+  );
 
   return (
     <DarkPortalRoot className="dark relative min-h-screen bg-background text-foreground">

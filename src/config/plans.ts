@@ -1,6 +1,7 @@
-// Planos de assinatura. Os `priceId`s vêm do Stripe Dashboard (Products >
-// Pricing) e são configurados via variáveis de ambiente — assim é possível
-// ter preços diferentes em teste e produção sem tocar no código.
+// Planos de assinatura. Os `caktoOfferId`s vêm do painel da Cakto (cada
+// plano é um produto/oferta cadastrado lá, com seu próprio link de
+// checkout) e são configurados via variáveis de ambiente — assim é
+// possível ter ofertas diferentes em teste e produção sem tocar no código.
 export type Plan = {
   id: "starter" | "pro";
   name: string;
@@ -10,7 +11,7 @@ export type Plan = {
   // (ex.: MRR no Painel Administrativo) sem precisar fazer parsing da
   // string de exibição.
   priceCents: number;
-  priceId: string | undefined;
+  caktoOfferId: string | undefined;
   features: string[];
   highlighted?: boolean;
 };
@@ -22,7 +23,7 @@ export const PLANS: Plan[] = [
     description: "Para começar e validar seu produto.",
     price: "R$ 29/mês",
     priceCents: 2900,
-    priceId: process.env.STRIPE_PRICE_ID_STARTER,
+    caktoOfferId: process.env.CAKTO_OFFER_ID_STARTER,
     features: ["1 usuário", "Recursos essenciais", "Suporte por email"],
   },
   {
@@ -31,7 +32,7 @@ export const PLANS: Plan[] = [
     description: "Para quem já está crescendo.",
     price: "R$ 99/mês",
     priceCents: 9900,
-    priceId: process.env.STRIPE_PRICE_ID_PRO,
+    caktoOfferId: process.env.CAKTO_OFFER_ID_PRO,
     features: [
       "Usuários ilimitados",
       "Todos os recursos",
@@ -41,7 +42,7 @@ export const PLANS: Plan[] = [
   },
 ];
 
-export function getPlanByPriceId(priceId: string | null | undefined) {
-  if (!priceId) return undefined;
-  return PLANS.find((plan) => plan.priceId === priceId);
+export function getPlanByOfferId(offerId: string | null | undefined) {
+  if (!offerId) return undefined;
+  return PLANS.find((plan) => plan.caktoOfferId === offerId);
 }

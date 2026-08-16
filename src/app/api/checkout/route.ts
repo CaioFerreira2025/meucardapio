@@ -2,29 +2,25 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { stripe, isStripeConfigured } from "@/lib/stripe";
-import { getAppUrl } from "@/lib/site";
+import { getCaktoCheckoutUrl } from "@/lib/cakto";
 import { PLANS } from "@/config/plans";
 
 const bodySchema = z.object({
   planId: z.enum(["starter", "pro"]),
 });
 
+// Diferente do checkout do Stripe (que criava uma sessão via API antes de
+// redirecionar), o checkout da Cakto é uma página hospedada com URL fixa
+// por oferta — não precisamos chamar a API deles aqui (nem de
+// CAKTO_CLIENT_ID/SECRET, usados só para chamadas autenticadas como
+// cancelar assinatura — ver src/lib/cakto.ts), só montar a URL com o
+// e-mail/nome do usuário pré-preenchidos. Mantemos essa rota (em vez de
+// montar a URL direto no client) para não precisar mexer no
+// CheckoutButton.tsx, que já espera um POST retornando `{ url }`.
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-  }
-
-  if (!isStripeConfigured) {
-    return NextResponse.json(
-      {
-        error:
-          "Stripe não está configurado neste ambiente. Defina STRIPE_SECRET_KEY no .env.",
-      },
-      { status: 500 }
-    );
   }
 
   const body = await request.json().catch(() => null);
@@ -34,55 +30,19 @@ export async function POST(request: Request) {
   }
 
   const plan = PLANS.find((item) => item.id === parsed.data.planId);
-  if (!plan?.priceId) {
+  if (!plan?.caktoOfferId) {
     return NextResponse.json(
       {
-        error: `Price ID do plano "${parsed.data.planId}" não configurado (ver STRIPE_PRICE_ID_* no .env).`,
+        error: `Oferta da Cakto para o plano "${parsed.data.planId}" não configurada (ver CAKTO_OFFER_ID_* no .env).`,
       },
       { status: 500 }
     );
   }
 
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: session.user.id },
+  const url = getCaktoCheckoutUrl(plan.caktoOfferId, {
+    email: session.user.email,
+    name: session.user.name,
   });
 
-  // Reaproveita o customer do Stripe se o usuário já tiver um; cria um novo
-  // caso contrário e persiste para as próximas cobranças/portal.
-  let customerId = user.stripeCustomerId;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      name: user.name ?? undefined,
-      metadata: { userId: user.id },
-    });
-    customerId = customer.id;
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { stripeCustomerId: customerId },
-    });
-  }
-
-  const appUrl = getAppUrl();
-
-  const checkoutSession = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: "subscription",
-    line_items: [{ price: plan.priceId, quantity: 1 }],
-    success_url: `${appUrl}/dashboard/billing?checkout=success`,
-    cancel_url: `${appUrl}/pricing?checkout=cancelled`,
-    client_reference_id: user.id,
-    subscription_data: {
-      metadata: { userId: user.id },
-    },
-  });
-
-  if (!checkoutSession.url) {
-    return NextResponse.json(
-      { error: "Não foi possível criar a sessão de checkout." },
-      { status: 500 }
-    );
-  }
-
-  return NextResponse.json({ url: checkoutSession.url });
+  return NextResponse.json({ url });
 }
