@@ -5,8 +5,14 @@ import { isValidCaktoWebhookSecret } from "@/lib/cakto";
 
 // Substitui o antigo /api/webhooks/stripe. A Cakto não assina o payload
 // (sem HMAC/header de assinatura) — a autenticidade vem só do campo
-// `secret` no corpo, validado contra CAKTO_WEBHOOK_SECRET (ver
-// src/lib/cakto.ts). Documentação: https://docs.cakto.com.br/conceitos/webhooks
+// `secret` no corpo, validado contra qualquer um dos secrets configurados
+// (CAKTO_WEBHOOK_SECRET / CAKTO_WEBHOOK_SECRET_STARTER /
+// CAKTO_WEBHOOK_SECRET_PRO — ver isValidCaktoWebhookSecret em
+// src/lib/cakto.ts, que cobre tanto um único webhook pra todos os planos
+// quanto um webhook por plano, cada um com seu próprio secret). Mesma URL
+// pra todos os webhooks cadastrados na Cakto: o plano de cada evento é
+// identificado pelo `offer.id`/`product.id` do payload, não pelo secret
+// usado pra autenticar. Documentação: https://docs.cakto.com.br/conceitos/webhooks
 //
 // Mapeamos o status local (mesmo vocabulário que já era usado com o
 // Stripe: active/past_due/canceled/paused) a partir do NOME do evento, não

@@ -90,19 +90,43 @@ export function getCaktoCheckoutUrl(
   return url.toString();
 }
 
-// Valida o `secret` recebido no corpo do webhook contra o valor configurado
-// em CAKTO_WEBHOOK_SECRET (obtido ao cadastrar o webhook no painel da
-// Cakto). A Cakto não assina o payload com HMAC — a autenticidade é
-// garantida só por esse secret vindo no corpo, então comparamos com
-// timingSafeEqual para evitar timing attack, como a própria documentação
-// recomenda.
+// Cada webhook cadastrado no painel da Cakto é vinculado a um ou mais
+// produtos (Starter, Pro, ...) e recebe seu próprio `secret` — um UUID
+// GERADO AUTOMATICAMENTE pela Cakto (não é possível escolher o valor,
+// só copiar o que aparece na tela após criar o webhook lá:
+// https://docs.cakto.com.br/api-reference/webhooks/retrieve). Ou seja, se
+// Starter e Pro tiverem webhooks separados (mesma URL, cadastros
+// diferentes), eles normalmente vêm com secrets DIFERENTES.
+//
+// Por isso aceitamos qualquer um dos secrets configurados, não só um:
+// CAKTO_WEBHOOK_SECRET_STARTER e CAKTO_WEBHOOK_SECRET_PRO cobrem o caso de
+// um webhook por plano; CAKTO_WEBHOOK_SECRET continua funcionando sozinho
+// para quem cadastrou um único webhook cobrindo os dois produtos. Todos os
+// valores configurados são válidos ao mesmo tempo — o evento já se
+// autoidentifica pelo `offer.id`/`product.id` dentro do payload (ver
+// getPlanByOfferId em src/config/plans.ts), então não precisamos (nem
+// conseguimos, com segurança) inferir o plano a partir de qual secret bateu.
+function getConfiguredCaktoWebhookSecrets(): string[] {
+  return [
+    process.env.CAKTO_WEBHOOK_SECRET,
+    process.env.CAKTO_WEBHOOK_SECRET_STARTER,
+    process.env.CAKTO_WEBHOOK_SECRET_PRO,
+  ].filter((value): value is string => Boolean(value));
+}
+
+// A Cakto não assina o payload com HMAC — a autenticidade é garantida só
+// pelo `secret` vindo no corpo do JSON, então comparamos com
+// timingSafeEqual (por secret candidato) para evitar timing attack, como a
+// própria documentação recomenda.
 export function isValidCaktoWebhookSecret(received: unknown): boolean {
-  const expected = process.env.CAKTO_WEBHOOK_SECRET;
-  if (!expected || typeof received !== "string" || !received) return false;
+  if (typeof received !== "string" || !received) return false;
 
   const receivedBuffer = Buffer.from(received);
-  const expectedBuffer = Buffer.from(expected);
-  if (receivedBuffer.length !== expectedBuffer.length) return false;
+  const configuredSecrets = getConfiguredCaktoWebhookSecrets();
 
-  return timingSafeEqual(receivedBuffer, expectedBuffer);
+  return configuredSecrets.some((expected) => {
+    const expectedBuffer = Buffer.from(expected);
+    if (receivedBuffer.length !== expectedBuffer.length) return false;
+    return timingSafeEqual(receivedBuffer, expectedBuffer);
+  });
 }
