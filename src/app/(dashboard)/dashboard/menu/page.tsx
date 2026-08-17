@@ -57,13 +57,15 @@ export default async function MenuPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <CategoryCard
               key={category.id}
               category={category}
               products={category.products}
               allCategories={categoryOptions}
               allProducts={allProducts}
+              isFirst={index === 0}
+              isLast={index === categories.length - 1}
             />
           ))}
         </div>

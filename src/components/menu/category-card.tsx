@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
 import {
   Card,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ProductFormDialog } from "@/components/menu/product-form-dialog";
 import { ProductRow } from "@/components/menu/product-row";
-import { deleteCategory } from "@/app/(dashboard)/dashboard/menu/actions";
+import { deleteCategory, moveCategory } from "@/app/(dashboard)/dashboard/menu/actions";
 
 type Product = {
   id: string;
@@ -45,13 +45,25 @@ export function CategoryCard({
   products,
   allCategories,
   allProducts,
+  isFirst,
+  isLast,
 }: {
   category: { id: string; name: string };
   products: Product[];
   allCategories: { id: string; name: string }[];
   allProducts: ProductOption[];
+  // Posição da categoria na lista já ordenada (ver page.tsx) — controla
+  // se as setas de subir/descer ficam habilitadas. A primeira categoria
+  // não tem pra onde subir, a última não tem pra onde descer.
+  isFirst: boolean;
+  isLast: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [isMoving, startMoveTransition] = useTransition();
+
+  function handleMove(direction: "up" | "down") {
+    startMoveTransition(() => moveCategory(category.id, direction));
+  }
 
   return (
     <Card>
@@ -64,6 +76,26 @@ export function CategoryCard({
           </span>
         </div>
         <CardAction className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5 rounded-lg bg-white/[0.03] p-0.5 ring-1 ring-white/10">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Mover categoria para cima"
+              disabled={isFirst || isMoving}
+              onClick={() => handleMove("up")}
+            >
+              <ChevronUp />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Mover categoria para baixo"
+              disabled={isLast || isMoving}
+              onClick={() => handleMove("down")}
+            >
+              <ChevronDown />
+            </Button>
+          </div>
           <ProductFormDialog
             categories={allCategories}
             defaultCategoryId={category.id}

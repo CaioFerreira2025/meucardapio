@@ -64,6 +64,53 @@ export async function createCategory(
   return {};
 }
 
+// Move uma categoria uma posição pra cima ou pra baixo na ordem de
+// exibição (dashboard e cardápio público usam a mesma `position` — ver
+// orderBy em page.tsx aqui e em src/lib/restaurant.ts). Em vez de
+// depender de `position` ser sempre contíguo (0,1,2,...) — pode ter
+// buracos depois de excluir uma categoria no meio —, buscamos a ordem
+// atual já ordenada e trocamos os valores de `position` com o vizinho
+// imediato nessa lista, não com "position ± 1" na conta.
+export async function moveCategory(categoryId: string, direction: "up" | "down") {
+  const restaurant = await requireRestaurant();
+
+  const categories = await prisma.category.findMany({
+    where: { restaurantId: restaurant.id },
+    orderBy: { position: "asc" },
+    select: { id: true, position: true },
+  });
+
+  const index = categories.findIndex((c) => c.id === categoryId);
+  if (index === -1) return;
+
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= categories.length) {
+    // Já está na primeira/última posição — nada a fazer (os botões no
+    // painel já ficam desabilitados nesse caso, isso é só a garantia do
+    // lado do servidor).
+    return;
+  }
+
+  const current = categories[index];
+  const target = categories[targetIndex];
+
+  // Transação: troca os dois valores de `position` numa única operação
+  // atômica, pra nunca ficar um estado intermediário com duas categorias
+  // na mesma posição (ex.: se a segunda escrita falhasse sozinha).
+  await prisma.$transaction([
+    prisma.category.update({
+      where: { id: current.id },
+      data: { position: target.position },
+    }),
+    prisma.category.update({
+      where: { id: target.id },
+      data: { position: current.position },
+    }),
+  ]);
+
+  revalidatePath("/dashboard/menu");
+}
+
 export async function deleteCategory(categoryId: string) {
   const restaurant = await requireRestaurant();
 
