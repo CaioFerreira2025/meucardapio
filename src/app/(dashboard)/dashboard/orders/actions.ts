@@ -57,21 +57,33 @@ export async function closeTable(tableNumber: string, paymentMethod: string) {
     throw new Error("Restaurante não encontrado");
   }
 
-  const activeOrders = await prisma.order.findMany({
+  // Pedidos ainda em andamento (pending/preparing/ready) OU já "Entregue"
+  // mas sem forma de pagamento registrada ainda — esse segundo caso é o que
+  // faltava aqui: o alerta "X mesas pediram a conta" (getTablesAwaitingBill)
+  // já mostra mesas com pedido "Entregue" aguardando pagamento (o cliente
+  // pode pedir a conta pelo painel de acompanhamento assim que o pedido
+  // chega), mas como esta busca só olhava status ativo, clicar em "Fechar
+  // mesa" nesse caso falhava com "Nenhum pedido em aberto encontrado" — a
+  // mesa nunca fechava por aqui. Pedido "Entregue" que JÁ tem forma de
+  // pagamento (já fechado antes) fica de fora, pra não mexer de novo nele.
+  const ordersToClose = await prisma.order.findMany({
     where: {
       restaurantId: restaurant.id,
       tableNumber,
-      status: { in: [...ACTIVE_ORDER_STATUSES] },
+      OR: [
+        { status: { in: [...ACTIVE_ORDER_STATUSES] } },
+        { status: "completed", paymentMethod: null },
+      ],
     },
     select: { id: true },
   });
 
-  if (activeOrders.length === 0) {
+  if (ordersToClose.length === 0) {
     throw new Error("Nenhum pedido em aberto encontrado para essa mesa.");
   }
 
   await prisma.order.updateMany({
-    where: { id: { in: activeOrders.map((o) => o.id) } },
+    where: { id: { in: ordersToClose.map((o) => o.id) } },
     data: { status: "completed", paymentMethod, billRequested: false },
   });
 

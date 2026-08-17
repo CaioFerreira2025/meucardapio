@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { prisma } from "@/lib/prisma";
 import { getEffectiveRestaurant } from "@/lib/restaurant-context";
+import { startOfTodayForRestaurant } from "@/lib/timezone";
 import { pageTitle } from "@/config/brand";
 import { CaixaClient } from "@/components/caixa/caixa-client";
 
@@ -13,7 +14,11 @@ export default async function CaixaPage() {
   const restaurant = await getEffectiveRestaurant();
   const restaurantId = restaurant!.id;
 
-  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+  // Meia-noite de "hoje" no timezone do restaurante (Brasil), não no
+  // timezone do servidor — ver comentário em src/lib/timezone.ts pro bug
+  // crítico que isso corrige (faturamento zerando à noite, no horário de
+  // pico do jantar).
+  const startOfToday = startOfTodayForRestaurant();
 
   const [openSession, todayOrders, recentClosedSessions] = await Promise.all([
     prisma.cashSession.findFirst({

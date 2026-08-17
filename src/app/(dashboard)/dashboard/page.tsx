@@ -16,6 +16,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { getTablesAwaitingBill } from "@/lib/tables";
+import { startOfTodayForRestaurant } from "@/lib/timezone";
 import { formatCents } from "@/lib/currency";
 import { getAppUrl } from "@/lib/site";
 import { pageTitle } from "@/config/brand";
@@ -43,7 +44,10 @@ export default async function DashboardPage() {
   const restaurant = await getEffectiveRestaurant();
   const restaurantId = restaurant!.id;
 
-  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+  // Meia-noite de "hoje" no timezone do restaurante (Brasil), não no
+  // timezone do servidor — ver comentário em src/lib/timezone.ts pro bug
+  // crítico que isso corrige (faturamento zerando à noite).
+  const startOfToday = startOfTodayForRestaurant();
 
   const [
     pendingOrders,

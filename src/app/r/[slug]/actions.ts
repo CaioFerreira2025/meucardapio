@@ -15,7 +15,14 @@ const checkoutSchema = z.object({
   slug: z.string().min(1),
   customerName: z.string().min(2, "Informe seu nome").max(80),
   customerPhone: z.string().min(8, "Informe um telefone válido").max(20),
-  tableNumber: z.string().max(20).optional(),
+  // Obrigatório — sem mesa/comanda a equipe não sabe pra onde levar o
+  // pedido nem consegue vincular o "Pedir a conta"/histórico de sessão
+  // (ver ActiveOrderPanel) à mesa certa.
+  tableNumber: z
+    .string()
+    .trim()
+    .min(1, "Informe o número da mesa ou comanda")
+    .max(20),
   notes: z.string().max(300).optional(),
   items: z.array(cartItemSchema).min(1, "Seu carrinho está vazio"),
 });
@@ -78,7 +85,7 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
       restaurantId: restaurant.id,
       customerName: parsed.data.customerName,
       customerPhone: parsed.data.customerPhone,
-      tableNumber: parsed.data.tableNumber || null,
+      tableNumber: parsed.data.tableNumber,
       notes: parsed.data.notes || null,
       totalCents,
       items: { create: orderItemsData },

@@ -47,43 +47,10 @@ import {
 } from "@/components/ui/sheet";
 import { formatCents } from "@/lib/currency";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { readLastOrder, writeLastOrder, type LastOrderInfo } from "@/lib/last-order";
 import { ReviewModal } from "@/components/reviews/review-modal";
+import { ActiveOrderPanel } from "@/components/public-menu/active-order-panel";
 import { createOrder } from "./actions";
-
-// Guarda o último pedido feito nesta loja (não um "login" de verdade — o
-// cardápio público não tem cadastro de cliente) só pra dar continuidade
-// entre visitas: pré-preencher nome/telefone no próximo pedido e oferecer
-// um atalho de volta pro acompanhamento do último pedido, na aba "Conta"
-// do menu inferior.
-type LastOrderInfo = {
-  orderId: string;
-  customerName: string;
-  customerPhone: string;
-};
-
-function lastOrderStorageKey(slug: string) {
-  return `cardapio:${slug}:lastOrder`;
-}
-
-function readLastOrder(slug: string): LastOrderInfo | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(lastOrderStorageKey(slug));
-    return raw ? (JSON.parse(raw) as LastOrderInfo) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeLastOrder(slug: string, info: LastOrderInfo) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(lastOrderStorageKey(slug), JSON.stringify(info));
-  } catch {
-    // localStorage indisponível (modo privado, quota etc.) — não é
-    // crítico, é só uma conveniência de continuidade entre visitas.
-  }
-}
 
 type ComplementProduct = {
   id: string;
@@ -143,8 +110,17 @@ export function MenuClient({
   const [moreOpen, setMoreOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [tableNumber, setTableNumber] = useState("");
+  // Pré-preenche com a mesa do último pedido feito neste navegador — mesmo
+  // padrão de nome/telefone acima, e é o que permite "Fazer novo pedido"
+  // (ver ActiveOrderPanel) já cair com a mesa certa, sem o cliente precisar
+  // digitar de novo.
+  const [tableNumber, setTableNumber] = useState(() => readLastOrder(slug)?.tableNumber ?? "");
   const [notes, setNotes] = useState("");
+  // Erros de validação amigáveis exibidos junto aos campos obrigatórios do
+  // checkout (nome, telefone e mesa/comanda), além do toast.
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [tableError, setTableError] = useState("");
 
   const lines = useMemo(() => Object.values(cart), [cart]);
   const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -207,17 +183,44 @@ export function MenuClient({
 
   async function handleCheckout() {
     if (lines.length === 0) return;
-    if (!customerName.trim() || !customerPhone.trim()) {
-      toast.error("Preencha seu nome e telefone.");
+
+    // Nome, telefone e mesa/comanda são obrigatórios — validação amigável
+    // aqui antes de bater na Server Action, que também valida (defesa em
+    // profundidade, ex.: JS desabilitado/chamada direta). Observação
+    // continua opcional, sem checagem.
+    const trimmedName = customerName.trim();
+    const trimmedPhone = customerPhone.trim();
+    const trimmedTable = tableNumber.trim();
+    let hasError = false;
+    if (trimmedName.length < 2) {
+      setNameError("Informe seu nome.");
+      hasError = true;
+    } else {
+      setNameError("");
+    }
+    if (trimmedPhone.length < 8) {
+      setPhoneError("Informe um telefone válido.");
+      hasError = true;
+    } else {
+      setPhoneError("");
+    }
+    if (!trimmedTable) {
+      setTableError("Informe o número da mesa ou comanda.");
+      hasError = true;
+    } else {
+      setTableError("");
+    }
+    if (hasError) {
+      toast.error("Preencha seu nome, telefone e a mesa/comanda para enviar o pedido.");
       return;
     }
 
     setIsSubmitting(true);
     const result = await createOrder({
       slug,
-      customerName,
-      customerPhone,
-      tableNumber: tableNumber || undefined,
+      customerName: trimmedName,
+      customerPhone: trimmedPhone,
+      tableNumber: trimmedTable,
       notes: notes || undefined,
       items: lines.map((line) => ({
         productId: line.product.id,
@@ -233,8 +236,9 @@ export function MenuClient({
 
     const info: LastOrderInfo = {
       orderId: result.orderId,
-      customerName,
-      customerPhone,
+      customerName: trimmedName,
+      customerPhone: trimmedPhone,
+      tableNumber: trimmedTable,
     };
     writeLastOrder(slug, info);
     setLastOrder(info);
@@ -262,6 +266,18 @@ export function MenuClient({
 
   return (
     <div className="flex flex-col gap-10 pb-28">
+      {/* Painel flutuante de "sessão ativa" — se o cliente reabrir o
+          cardápio (ou escanear o QR Code de novo) e ainda houver um pedido
+          em andamento/entregue com a conta em aberto nesta mesa (guardado
+          no localStorage deste navegador, ver src/lib/last-order.ts), ele
+          aparece aqui por cima do cardápio normal, sem bloquear a
+          navegação. Renderizado sempre (mesmo sem `lastOrder` salvo) porque
+          a leitura do localStorage só é segura dentro de um efeito no
+          próprio componente (evita divergir do HTML renderizado no
+          servidor) — o painel decide sozinho, depois de montado, se tem
+          algo pra mostrar. */}
+      <ActiveOrderPanel slug={slug} />
+
       {!isOpen && (
         <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
           Este restaurante não está aceitando pedidos no momento.
@@ -483,33 +499,76 @@ export function MenuClient({
 
               <div className="flex flex-col gap-3 border-t border-border pt-4">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="customer-name">Seu nome</Label>
+                  <Label htmlFor="customer-name">
+                    Seu nome <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="customer-name"
                     value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      if (nameError) setNameError("");
+                    }}
+                    placeholder="Como podemos te chamar?"
                     required
+                    aria-invalid={nameError ? true : undefined}
+                    aria-describedby={nameError ? "customer-name-error" : undefined}
+                    className={nameError ? "border-red-500 focus-visible:ring-red-500/40" : undefined}
                   />
+                  {nameError && (
+                    <p id="customer-name-error" className="text-xs text-red-400">
+                      {nameError}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="customer-phone">Telefone / WhatsApp</Label>
+                  <Label htmlFor="customer-phone">
+                    Telefone / WhatsApp <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="customer-phone"
                     value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerPhone(e.target.value);
+                      if (phoneError) setPhoneError("");
+                    }}
+                    placeholder="(11) 99999-9999"
                     required
+                    aria-invalid={phoneError ? true : undefined}
+                    aria-describedby={phoneError ? "customer-phone-error" : undefined}
+                    className={phoneError ? "border-red-500 focus-visible:ring-red-500/40" : undefined}
                   />
+                  {phoneError && (
+                    <p id="customer-phone-error" className="text-xs text-red-400">
+                      {phoneError}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="table-number">Mesa (opcional)</Label>
+                  <Label htmlFor="table-number">
+                    Mesa / Comanda <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="table-number"
                     value={tableNumber}
-                    onChange={(e) => setTableNumber(e.target.value)}
+                    onChange={(e) => {
+                      setTableNumber(e.target.value);
+                      if (tableError) setTableError("");
+                    }}
+                    placeholder="Ex.: 12"
+                    required
+                    aria-invalid={tableError ? true : undefined}
+                    aria-describedby={tableError ? "table-number-error" : undefined}
+                    className={tableError ? "border-red-500 focus-visible:ring-red-500/40" : undefined}
                   />
+                  {tableError && (
+                    <p id="table-number-error" className="text-xs text-red-400">
+                      {tableError}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="order-notes">Observações</Label>
+                  <Label htmlFor="order-notes">Observações (opcional)</Label>
                   <Textarea
                     id="order-notes"
                     value={notes}
