@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FocusEvent } from "react";
+import { useMemo, useState, type FocusEvent } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -31,19 +31,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { formatCents } from "@/lib/currency";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
@@ -121,27 +114,6 @@ export function MenuClient({
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [tableError, setTableError] = useState("");
-
-  // Altura real da área visível da tela, via Visual Viewport API — não dá
-  // pra confiar só em `dvh` aqui: em boa parte dos navegadores mobile
-  // (principalmente Safari/iOS), `dvh`/`svh` reage a esconder/mostrar a
-  // barra de endereço, mas NÃO encolhe quando o teclado virtual abre. Já
-  // `visualViewport.height` reflete a área realmente visível descontando o
-  // teclado, então usamos isso (quando disponível) como teto real do modal
-  // de checkout, garantindo que o rodapé com "Enviar pedido" nunca fique
-  // escondido atrás do teclado. Sem suporte (`visualViewport` ausente),
-  // cai de volta pro `max-h-[85dvh]` puro via CSS.
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    function updateHeight() {
-      setViewportHeight(vv!.height);
-    }
-    updateHeight();
-    vv.addEventListener("resize", updateHeight);
-    return () => vv.removeEventListener("resize", updateHeight);
-  }, []);
 
   // Ao focar um campo do formulário de checkout, rola o próprio campo pro
   // centro da área visível assim que o teclado termina de abrir. Não dá
@@ -411,11 +383,11 @@ export function MenuClient({
       ))}
 
       {totalItems > 0 && (
-        <Dialog>
+        <Sheet>
           {/* Botão flutuante do carrinho — fica ancorado no canto inferior
               em qualquer tamanho de tela, sem empurrar o conteúdo da
               página (diferente de uma barra fixa em largura total). */}
-          <DialogTrigger
+          <SheetTrigger
             render={
               <button
                 type="button"
@@ -440,37 +412,35 @@ export function MenuClient({
               </button>
             }
           />
-          {/* Checkout como modal central flutuante — antes era um sheet
-              lateral (side="right") que, no celular, ficava só com 75% da
-              largura por causa de uma regra de especificidade do
-              componente Sheet (data-[side=right]:w-3/4 tem mais
-              especificidade que a largura passada via className), dando a
-              impressão de barra lateral espremida. Um Dialog centralizado
-              resolve isso de raiz e dá bem mais espaço pros campos do
-              formulário. Mesmo padrão de "modal alto com rolagem interna"
-              já usado no formulário de produto do painel (max-h + overflow-hidden
-              no modal, scroll só na área de conteúdo) — `max-h-[85dvh]`
-              (altura de viewport DINÂMICA) em vez de `vh` fixo: no celular,
-              quando o teclado abre pra preencher nome/telefone/observações,
-              a área visível encolhe; `dvh` acompanha isso e o rodapé com o
-              botão "Enviar pedido" (fora da área que rola, ver abaixo)
-              nunca fica escondido atrás do teclado. */}
-          <DialogContent
-            className="flex max-h-[85dvh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
-            style={
-              viewportHeight
-                ? { maxHeight: Math.round(viewportHeight * 0.92) }
-                : undefined
-            }
+          {/* Checkout como bottom sheet, ancorado embaixo da tela — não mais
+              um Dialog centralizado (`top-1/2 left-1/2` com transform).
+              Motivo da troca: um modal centralizado por transform é
+              posicionado a partir do viewport de LAYOUT, que no Safari/iOS
+              não encolhe quando o teclado virtual abre (só o viewport
+              VISUAL encolhe) — resultado, o modal podia ficar
+              descentralizado/cortado de um jeito imprevisível assim que um
+              campo ganhava foco. Um sheet ancorado com `bottom-0` não sofre
+              disso: a borda inferior dele já é a borda inferior da tela por
+              definição, então não há recentralização pra dar errado.
+              Mesmo padrão (`max-h-[85dvh]` + `overflow-y-auto` só na área de
+              conteúdo, botão de enviar fora dela) já comprovado no sheet de
+              Busca deste mesmo arquivo, que também abre teclado. Antes desse
+              checkout ter virado bottom sheet, ele foi um sheet lateral
+              (side="right") — tinha um bug de largura (`data-[side=right]:w-3/4`
+              do componente Sheet vencia a largura custom por especificidade
+              CSS) que não existe no lado "bottom". */}
+          <SheetContent
+            side="bottom"
+            className="mx-auto flex max-h-[85dvh] w-full flex-col gap-0 overflow-hidden rounded-t-2xl p-0 pb-[env(safe-area-inset-bottom)] sm:max-w-lg"
           >
-            <DialogHeader className="gap-0.5 p-4 pb-3">
-              <DialogTitle className="text-white">
+            <SheetHeader className="gap-0.5 p-4 pb-3">
+              <SheetTitle className="text-white">
                 Seu pedido — {restaurantName}
-              </DialogTitle>
-              <DialogDescription>
+              </SheetTitle>
+              <SheetDescription>
                 Confira os itens e preencha seus dados para enviar o pedido.
-              </DialogDescription>
-            </DialogHeader>
+              </SheetDescription>
+            </SheetHeader>
 
             <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4">
               <div className="flex flex-col gap-1 rounded-xl bg-white/[0.03] p-2 ring-1 ring-white/5">
@@ -646,25 +616,25 @@ export function MenuClient({
                 {isSubmitting ? "Enviando..." : "Enviar pedido"}
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       )}
 
-      {/* Menu inferior flutuante, estilo app nativo — só no mobile
-          (`md:hidden`); no desktop a navegação por pílulas de categoria já
-          cobre a necessidade de navegação rápida, sem precisar de uma
-          barra fixa ocupando espaço numa tela grande. Antes ficava colado
-          nas bordas (`inset-x-0 bottom-0`, cantos retos, sem sombra) — bem
-          diferente do padrão "app" do resto do site (ver ActiveOrderPanel,
-          mesmo tratamento de cartão flutuante: `rounded-2xl` +
-          `bg-popover/95` + `shadow-2xl` + `ring-1 ring-white/10` +
-          `backdrop-blur-xl`). `inset-x-3` dá a margem lateral; o `bottom`
-          usa `max(0.75rem, env(safe-area-inset-bottom))` — pelo menos 12px
-          de respiro em qualquer aparelho, e mais que isso em telas com
-          barra de gestos/home indicator (iPhone com notch, Android com
-          gesture nav), pra a barra nunca ficar colada em cima da área do
-          sistema. */}
-      <nav className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex overflow-hidden rounded-2xl border border-white/10 bg-popover/95 shadow-2xl shadow-black/40 ring-1 ring-white/10 backdrop-blur-xl md:hidden">
+      {/* Menu inferior fixo, estilo app nativo — só no mobile (`md:hidden`);
+          no desktop a navegação por pílulas de categoria já cobre a
+          necessidade de navegação rápida, sem precisar de uma barra fixa
+          ocupando espaço numa tela grande. Colado nas bordas
+          (`inset-x-0 bottom-0`), sem vão embaixo — uma versão anterior
+          tinha virado um cartão flutuante com margem e respiro embaixo
+          (`inset-x-3` + `bottom-3`), mas isso deixava um vão vazio entre a
+          barra e a borda da tela, um padrão menos "nativo" que apps de
+          referência do setor não usam (eles vão até a borda). O respiro de
+          segurança pra não colar em cima da barra de gestos/home indicator
+          continua existindo, só que como padding INTERNO da própria barra
+          (`pb-[env(safe-area-inset-bottom)]`, empurra os botões pra cima,
+          mas o fundo da barra continua preenchendo até a borda física da
+          tela) em vez de margem externa. */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/10 bg-popover/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl md:hidden">
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
