@@ -80,11 +80,13 @@ export async function closeTable(tableNumber: string, paymentMethod: string) {
   revalidatePath("/dashboard/caixa");
 }
 
-// Arquiva/desarquiva um pedido já "Entregue" na Central de pedidos — puramente
-// visual/organizacional (some do quadro kanban ativo pra não poluir a coluna
-// "Entregues", mas continua no banco e reaparece em "Histórico arquivado").
-// Isolada de propósito: não mexe em `status` nem em nenhum outro campo, então
-// não interfere no fluxo Recebido -> Em preparo -> Pronto -> Entregue.
+// Arquiva/desarquiva um pedido na Central de pedidos — puramente
+// visual/organizacional (some do quadro kanban ativo pra o lojista limpar a
+// tela quando quiser, mas continua no banco e reaparece em "Histórico
+// arquivado"). Funciona em qualquer status (inclusive pedidos ativos, a
+// pedido do lojista). Isolada de propósito: não mexe em `status` nem em
+// nenhum outro campo, então não interfere no fluxo Recebido -> Em preparo ->
+// Pronto -> Entregue.
 export async function setOrderArchived(orderId: string, archived: boolean) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -97,7 +99,7 @@ export async function setOrderArchived(orderId: string, archived: boolean) {
   }
 
   await prisma.order.updateMany({
-    where: { id: orderId, restaurantId: restaurant.id, status: "completed" },
+    where: { id: orderId, restaurantId: restaurant.id },
     data: { archived },
   });
 

@@ -18,6 +18,7 @@ type Order = {
   status: string;
   totalCents: number;
   createdAt: Date;
+  updatedAt: Date;
   items: OrderItem[];
   archived: boolean;
 };
@@ -56,8 +57,16 @@ export function OrderColumn({
           inteira pra baixo; só o conteúdo da coluna rola, o quadro kanban
           como um todo fica fixo na tela. `dvh` em vez de `vh` pelo mesmo
           motivo do resto do painel: acompanha a altura real visível em
-          telas de celular. */}
-      <div className="flex max-h-[calc(100dvh-220px)] flex-col gap-3 overflow-y-auto pr-1">
+          telas de celular.
+          `[&>*]:shrink-0` é essencial aqui: sem isso, os cards (filhos de um
+          flex-col) tinham `min-height:auto` zerado pelo próprio
+          `overflow-hidden` do Card (regra do flexbox pra automatic minimum
+          size), então em colunas com muitos pedidos o navegador ESPREMIA
+          todos os cards pra caber na altura máxima em vez de deixar a
+          coluna rolar — cards ficavam cortados/ilegíveis. Marcando os
+          cards como não-encolhíveis, eles mantêm a altura natural e o
+          excesso vira scroll, como deveria. */}
+      <div className="flex max-h-[calc(100dvh-220px)] flex-col gap-3 overflow-y-auto pr-1 [&>*]:shrink-0">
         {orders.length === 0 ? (
           <p className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-6 text-center text-xs text-muted-foreground">
             {emptyLabel}

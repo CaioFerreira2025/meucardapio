@@ -29,15 +29,17 @@ export default async function OrdersPage() {
   // (ORDER_STATUSES, updateOrderStatus), só reorganizado em quadro por
   // etapa — Recebidos → Em preparo → Prontos → Entregues — em vez das duas
   // seções antigas (Em aberto / Histórico).
-  const received = orders.filter((o) => o.status === "pending");
-  const preparing = orders.filter((o) => o.status === "preparing");
-  const ready = orders.filter((o) => o.status === "ready");
-  // Pedidos "Entregues" que o lojista arquivou (botão "Ocultar pedido") saem
-  // do quadro ativo pra não empilhar infinitamente a coluna, mas continuam
-  // no banco e aparecem em "Ver histórico arquivado".
+  //
+  // Pedidos que o lojista arquivou (botão "Ocultar pedido", disponível em
+  // qualquer coluna) saem do quadro ativo pra ele poder limpar a tela
+  // quando quiser, mas continuam no banco e aparecem em "Ver histórico
+  // arquivado" — não importa o status em que estavam quando arquivados.
+  const received = orders.filter((o) => o.status === "pending" && !o.archived);
+  const preparing = orders.filter((o) => o.status === "preparing" && !o.archived);
+  const ready = orders.filter((o) => o.status === "ready" && !o.archived);
   const delivered = orders.filter((o) => o.status === "completed" && !o.archived);
-  const archivedOrders = orders.filter((o) => o.status === "completed" && o.archived);
-  const cancelled = orders.filter((o) => o.status === "cancelled");
+  const cancelled = orders.filter((o) => o.status === "cancelled" && !o.archived);
+  const archivedOrders = orders.filter((o) => o.archived);
 
   return (
     <div className="flex flex-col gap-8">

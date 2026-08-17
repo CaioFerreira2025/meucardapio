@@ -23,16 +23,19 @@ type Order = {
   status: string;
   totalCents: number;
   createdAt: Date;
+  updatedAt: Date;
   items: OrderItem[];
   archived: boolean;
 };
 
 // Botão "Ver histórico arquivado" no topo da Central de pedidos + a lista de
-// pedidos "Entregues" que o lojista ocultou do quadro kanban ativo (ver
-// OrderCard "Ocultar pedido" / server action `setOrderArchived`). Puramente
-// um filtro de visualização — os pedidos continuam no banco, só saem do
-// quadro ativo pra não poluir a coluna "Entregues"; aqui dá pra achá-los de
-// novo e, se precisar, restaurar pro quadro ativo.
+// pedidos que o lojista ocultou do quadro kanban ativo, em qualquer status
+// (ver OrderCard "Ocultar pedido" / server action `setOrderArchived`).
+// Puramente um filtro de visualização — os pedidos continuam no banco, só
+// saem do quadro ativo pra não poluir a tela; aqui dá pra achá-los de novo
+// e, se precisar, restaurar pro quadro ativo (o card continua com todos os
+// botões normais de status, então dá pra avançar/cancelar um pedido ativo
+// mesmo estando arquivado).
 export function ArchivedOrdersSection({ orders }: { orders: Order[] }) {
   const [open, setOpen] = useState(false);
 
