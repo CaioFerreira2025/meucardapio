@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FocusEvent } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -121,6 +121,40 @@ export function MenuClient({
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [tableError, setTableError] = useState("");
+
+  // Altura real da área visível da tela, via Visual Viewport API — não dá
+  // pra confiar só em `dvh` aqui: em boa parte dos navegadores mobile
+  // (principalmente Safari/iOS), `dvh`/`svh` reage a esconder/mostrar a
+  // barra de endereço, mas NÃO encolhe quando o teclado virtual abre. Já
+  // `visualViewport.height` reflete a área realmente visível descontando o
+  // teclado, então usamos isso (quando disponível) como teto real do modal
+  // de checkout, garantindo que o rodapé com "Enviar pedido" nunca fique
+  // escondido atrás do teclado. Sem suporte (`visualViewport` ausente),
+  // cai de volta pro `max-h-[85dvh]` puro via CSS.
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    function updateHeight() {
+      setViewportHeight(vv!.height);
+    }
+    updateHeight();
+    vv.addEventListener("resize", updateHeight);
+    return () => vv.removeEventListener("resize", updateHeight);
+  }, []);
+
+  // Ao focar um campo do formulário de checkout, rola o próprio campo pro
+  // centro da área visível assim que o teclado termina de abrir. Não dá
+  // pra chamar `scrollIntoView` na hora do evento `focus`: no iOS Safari o
+  // teclado ainda está animando e a altura visível (usada acima) ainda não
+  // se estabilizou, então o scroll calculado ali erraria o alvo — por isso
+  // o pequeno atraso.
+  function handleFieldFocus(e: FocusEvent<HTMLElement>) {
+    const target = e.currentTarget;
+    window.setTimeout(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  }
 
   const lines = useMemo(() => Object.values(cart), [cart]);
   const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -265,7 +299,11 @@ export function MenuClient({
   }, [categories, searchQuery]);
 
   return (
-    <div className="flex flex-col gap-10 pb-28">
+    // `pb-[calc(...)]` soma a altura reservada pro menu inferior flutuante
+    // (ver `<nav>` abaixo) com `env(safe-area-inset-bottom)` — a mesma folga
+    // de segurança usada ali —, pra nenhum item do cardápio ficar escondido
+    // atrás dele em aparelhos com ou sem barra de gestos/home indicator.
+    <div className="flex flex-col gap-10 pb-[calc(7rem+env(safe-area-inset-bottom))]">
       {/* Painel flutuante de "sessão ativa" — se o cliente reabrir o
           cardápio (ou escanear o QR Code de novo) e ainda houver um pedido
           em andamento/entregue com a conta em aberto nesta mesa (guardado
@@ -381,11 +419,14 @@ export function MenuClient({
             render={
               <button
                 type="button"
-                // `bottom-20` (em vez do `bottom-5` original) dá espaço pro
-                // menu inferior fixo, que ocupa essa faixa no mobile; a
-                // partir de `md` o menu inferior já some (`md:hidden`
-                // abaixo), então volta a ficar mais perto da borda.
-                className="fixed right-4 bottom-20 z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-orange-950/40 ring-1 ring-white/10 transition-transform active:scale-95 md:right-8 md:bottom-8"
+                // `bottom-[calc(...)]` (em vez de um `bottom-5` fixo) dá
+                // espaço pro menu inferior flutuante, que ocupa essa faixa
+                // no mobile, já somando a folga de segurança do aparelho
+                // (`env(safe-area-inset-bottom)`) — mesma conta usada no
+                // padding do conteúdo acima. A partir de `md` o menu
+                // inferior já some (`md:hidden` abaixo), então volta a
+                // ficar mais perto da borda.
+                className="fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-orange-950/40 ring-1 ring-white/10 transition-transform active:scale-95 md:right-8 md:bottom-8"
               >
                 <span className="relative flex items-center">
                   <ShoppingCart className="size-5" />
@@ -414,7 +455,14 @@ export function MenuClient({
               a área visível encolhe; `dvh` acompanha isso e o rodapé com o
               botão "Enviar pedido" (fora da área que rola, ver abaixo)
               nunca fica escondido atrás do teclado. */}
-          <DialogContent className="flex max-h-[85dvh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+          <DialogContent
+            className="flex max-h-[85dvh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+            style={
+              viewportHeight
+                ? { maxHeight: Math.round(viewportHeight * 0.92) }
+                : undefined
+            }
+          >
             <DialogHeader className="gap-0.5 p-4 pb-3">
               <DialogTitle className="text-white">
                 Seu pedido — {restaurantName}
@@ -509,6 +557,7 @@ export function MenuClient({
                       setCustomerName(e.target.value);
                       if (nameError) setNameError("");
                     }}
+                    onFocus={handleFieldFocus}
                     placeholder="Como podemos te chamar?"
                     required
                     aria-invalid={nameError ? true : undefined}
@@ -532,6 +581,7 @@ export function MenuClient({
                       setCustomerPhone(e.target.value);
                       if (phoneError) setPhoneError("");
                     }}
+                    onFocus={handleFieldFocus}
                     placeholder="(11) 99999-9999"
                     required
                     aria-invalid={phoneError ? true : undefined}
@@ -555,6 +605,7 @@ export function MenuClient({
                       setTableNumber(e.target.value);
                       if (tableError) setTableError("");
                     }}
+                    onFocus={handleFieldFocus}
                     placeholder="Ex.: 12"
                     required
                     aria-invalid={tableError ? true : undefined}
@@ -573,6 +624,7 @@ export function MenuClient({
                     id="order-notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
+                    onFocus={handleFieldFocus}
                     placeholder="Sem cebola, ponto da carne, etc."
                   />
                 </div>
@@ -598,11 +650,21 @@ export function MenuClient({
         </Dialog>
       )}
 
-      {/* Menu inferior fixo, estilo app nativo — só no mobile (`md:hidden`);
-          no desktop a navegação por pílulas de categoria já cobre a
-          necessidade de navegação rápida, sem precisar de uma barra fixa
-          ocupando espaço numa tela grande. */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-background/95 backdrop-blur-xl md:hidden">
+      {/* Menu inferior flutuante, estilo app nativo — só no mobile
+          (`md:hidden`); no desktop a navegação por pílulas de categoria já
+          cobre a necessidade de navegação rápida, sem precisar de uma
+          barra fixa ocupando espaço numa tela grande. Antes ficava colado
+          nas bordas (`inset-x-0 bottom-0`, cantos retos, sem sombra) — bem
+          diferente do padrão "app" do resto do site (ver ActiveOrderPanel,
+          mesmo tratamento de cartão flutuante: `rounded-2xl` +
+          `bg-popover/95` + `shadow-2xl` + `ring-1 ring-white/10` +
+          `backdrop-blur-xl`). `inset-x-3` dá a margem lateral; o `bottom`
+          usa `max(0.75rem, env(safe-area-inset-bottom))` — pelo menos 12px
+          de respiro em qualquer aparelho, e mais que isso em telas com
+          barra de gestos/home indicator (iPhone com notch, Android com
+          gesture nav), pra a barra nunca ficar colada em cima da área do
+          sistema. */}
+      <nav className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex overflow-hidden rounded-2xl border border-white/10 bg-popover/95 shadow-2xl shadow-black/40 ring-1 ring-white/10 backdrop-blur-xl md:hidden">
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
