@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { FloatingIcon } from "@/components/landing/floating-icon";
 import { FloatingChip } from "@/components/landing/floating-chip";
 import { LogoMark } from "@/components/brand/logo";
-import { BRAND_NAME } from "@/config/brand";
+import { BRAND_NAME, DEMO_RESTAURANT_SLUG } from "@/config/brand";
 
 const TRUST_ITEMS = [
   "Configura em minutos",
@@ -164,7 +164,7 @@ export function HeroSection() {
             variant="outline"
             className="h-12 rounded-xl border-white/20 bg-white/5 px-6 text-base text-white backdrop-blur-md hover:bg-white/10 hover:text-white"
             render={
-              <Link href="/r/lanchonete-do-joao" target="_blank" rel="noreferrer">
+              <Link href={`/r/${DEMO_RESTAURANT_SLUG}`} target="_blank" rel="noreferrer">
                 Ver Cardápio de Demonstração
               </Link>
             }

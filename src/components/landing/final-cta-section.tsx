@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
 import { PLANS } from "@/config/plans";
+import { DEMO_RESTAURANT_SLUG } from "@/config/brand";
 
 // Preço do plano mais barato, usado no texto "a partir de" abaixo — lido
 // direto de PLANS (mesma fonte usada pelos cards de planos) em vez de um
@@ -52,7 +53,7 @@ export function FinalCtaSection() {
                   className="h-12 rounded-xl border-white/20 bg-white/5 px-6 text-base text-white backdrop-blur-md hover:bg-white/10 hover:text-white"
                   render={
                     <Link
-                      href="/r/lanchonete-do-joao"
+                      href={`/r/${DEMO_RESTAURANT_SLUG}`}
                       target="_blank"
                       rel="noreferrer"
                     >

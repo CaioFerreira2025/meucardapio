@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
-import { BRAND_NAME } from "@/config/brand";
+import { BRAND_NAME, DEMO_RESTAURANT_SLUG } from "@/config/brand";
 
 export function LandingFooter() {
   return (
@@ -22,7 +22,7 @@ export function LandingFooter() {
             Criar conta
           </Link>
           <Link
-            href="/r/lanchonete-do-joao"
+            href={`/r/${DEMO_RESTAURANT_SLUG}`}
             target="_blank"
             rel="noreferrer"
             className="hover:text-white"
