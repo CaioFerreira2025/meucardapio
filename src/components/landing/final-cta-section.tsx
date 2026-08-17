@@ -5,6 +5,13 @@ import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
+import { PLANS } from "@/config/plans";
+
+// Preço do plano mais barato, usado no texto "a partir de" abaixo — lido
+// direto de PLANS (mesma fonte usada pelos cards de planos) em vez de um
+// valor fixo no meio da frase, pra nunca ficar dessincronizado quando o
+// preço de algum plano mudar em src/config/plans.ts.
+const cheapestPlan = [...PLANS].sort((a, b) => a.priceCents - b.priceCents)[0];
 
 export function FinalCtaSection() {
   return (
@@ -24,8 +31,8 @@ export function FinalCtaSection() {
               <p className="max-w-lg text-lg text-zinc-400">
                 Crie sua conta grátis agora e monte seu cardápio digital em
                 minutos. Planos pagos a partir de{" "}
-                <span className="text-zinc-300">R$ 29/mês</span> quando você
-                quiser desbloquear mais recursos.
+                <span className="text-zinc-300">{cheapestPlan.price}</span>{" "}
+                quando você quiser desbloquear mais recursos.
               </p>
 
               <div className="mt-2 flex flex-col gap-3 sm:flex-row">
