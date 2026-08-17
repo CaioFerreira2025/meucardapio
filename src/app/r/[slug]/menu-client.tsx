@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FocusEvent } from "react";
+import { useEffect, useMemo, useState, type FocusEvent } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -115,17 +115,63 @@ export function MenuClient({
   const [phoneError, setPhoneError] = useState("");
   const [tableError, setTableError] = useState("");
 
-  // Ao focar um campo do formulário de checkout, rola o próprio campo pro
-  // centro da área visível assim que o teclado termina de abrir. Não dá
-  // pra chamar `scrollIntoView` na hora do evento `focus`: no iOS Safari o
-  // teclado ainda está animando e a altura visível (usada acima) ainda não
-  // se estabilizou, então o scroll calculado ali erraria o alvo — por isso
-  // o pequeno atraso.
+  // Altura do teclado virtual, em px, medida pela Visual Viewport API.
+  //
+  // O `interactiveWidget: "resizes-content"` declarado em layout.tsx já
+  // resolve isso sozinho onde é suportado (Chrome/Android): o layout
+  // encolhe e um elemento com `bottom: 0` sobe naturalmente. No Safari/iOS
+  // o suporte é inconsistente, e lá o teclado é desenhado POR CIMA da
+  // página sem encolher o viewport de layout — resultado: um bottom sheet
+  // ancorado em `bottom: 0` fica com a parte de baixo (justamente o botão
+  // "Enviar pedido" e os últimos campos) escondida atrás do teclado.
+  //
+  // A conta abaixo é a diferença entre a altura da janela e a altura da
+  // parte REALMENTE visível — que é exatamente o quanto o teclado ocupa.
+  // Onde `interactive-widget` já funciona, `window.innerHeight` também
+  // encolhe junto e essa conta dá ~0, então os dois mecanismos convivem
+  // sem brigar (não dá pra empurrar duas vezes).
+  //
+  // Tentativa anterior errou o alvo por aplicar isso como `maxHeight` num
+  // modal CENTRALIZADO por transform: encolher a altura de algo centrado
+  // por `translate(-50%,-50%)` mexe no ponto de ancoragem e o modal
+  // "pulava". Ancorado embaixo, o ajuste é só um deslocamento — previsível.
+  const [keyboardInset, setKeyboardInset] = useState(0);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    function update() {
+      const inset = window.innerHeight - vv!.height - vv!.offsetTop;
+      // Ruído de 1-2px acontece só por arredondamento de zoom; só trata
+      // como "teclado aberto" a partir de uma faixa que nenhum navegador
+      // produz por acidente.
+      setKeyboardInset(inset > 80 ? Math.round(inset) : 0);
+    }
+
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  // Ao focar um campo do formulário de checkout, traz o campo pra área
+  // visível assim que o teclado termina de abrir. `block: "nearest"` (e não
+  // "center") de propósito: dentro de um container que já rola, "center"
+  // pede um deslocamento maior do que existe e o iOS Safari compensa
+  // rolando a PÁGINA atrás do sheet, que era parte do efeito de "tela
+  // cortada". "nearest" move só o mínimo pra o campo aparecer.
+  //
+  // O atraso existe porque no momento do evento `focus` o teclado ainda
+  // está animando: a altura visível (e portanto `keyboardInset` acima)
+  // ainda não se estabilizou, então um scroll calculado ali erra o alvo.
   function handleFieldFocus(e: FocusEvent<HTMLElement>) {
     const target = e.currentTarget;
     window.setTimeout(() => {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 300);
+      target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 350);
   }
 
   const lines = useMemo(() => Object.values(cart), [cart]);
@@ -431,7 +477,22 @@ export function MenuClient({
               CSS) que não existe no lado "bottom". */}
           <SheetContent
             side="bottom"
-            className="mx-auto flex max-h-[85dvh] w-full flex-col gap-0 overflow-hidden rounded-t-2xl p-0 pb-[env(safe-area-inset-bottom)] sm:max-w-lg"
+            className="mx-auto flex w-full flex-col gap-0 overflow-hidden rounded-t-2xl p-0 sm:max-w-lg"
+            style={{
+              // Com teclado aberto, o sheet inteiro sobe exatamente a altura
+              // dele e passa a caber no espaço que sobrou — em vez de manter
+              // a base atrás do teclado e ir cortando os campos de baixo.
+              bottom: keyboardInset,
+              maxHeight: keyboardInset
+                ? `calc(100dvh - ${keyboardInset}px - 1rem)`
+                : "85dvh",
+              // A margem de segurança do aparelho (barra de gestos) só faz
+              // sentido com o teclado FECHADO; aberto, quem ocupa a base é o
+              // teclado, e somar os dois deixaria uma faixa morta.
+              paddingBottom: keyboardInset
+                ? 0
+                : "env(safe-area-inset-bottom)",
+            }}
           >
             <SheetHeader className="gap-0.5 p-4 pb-3">
               <SheetTitle className="text-white">
@@ -633,8 +694,18 @@ export function MenuClient({
           continua existindo, só que como padding INTERNO da própria barra
           (`pb-[env(safe-area-inset-bottom)]`, empurra os botões pra cima,
           mas o fundo da barra continua preenchendo até a borda física da
-          tela) em vez de margem externa. */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/10 bg-popover/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl md:hidden">
+          tela) em vez de margem externa. IMPORTANTE: esse `env()` só devolve
+          um valor real por causa do `viewportFit: "cover"` declarado em
+          src/app/layout.tsx — sem aquilo, ele resolve 0px e essa linha vira
+          letra morta.
+
+          Fundo `bg-[#121212]` SÓLIDO (antes era `bg-popover/95` +
+          `backdrop-blur-xl`): translúcido deixava o conteúdo do cardápio
+          aparecer por trás da barra ao rolar, o que lia como acabamento
+          inacabado ao lado de apps do setor, que usam barra opaca. O blur
+          saiu junto porque não tem mais o que borrar — e ainda economiza
+          composição de camada no celular. */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/10 bg-[#121212] pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.35)] md:hidden">
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -671,12 +742,22 @@ export function MenuClient({
 
       {/* Sheet "Busca" — lista achatada de produtos de todas as categorias
           que batem com o texto digitado, com atalho de adicionar direto ao
-          carrinho sem precisar rolar até a seção da categoria.
-          `max-h-[85dvh]` (não `vh` fixo) pelo mesmo motivo do checkout
-          acima: o campo de busca abre o teclado no celular, e a altura
-          dinâmica acompanha o encolhimento da área visível. */}
+          carrinho sem precisar rolar até a seção da categoria. O campo de
+          busca tem `autoFocus`, ou seja, o teclado abre junto com o sheet —
+          então recebe o MESMO deslocamento por `keyboardInset` do checkout
+          (ver comentário lá em cima), senão a lista de resultados nasce
+          escondida atrás do teclado. */}
       <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
-        <SheetContent side="bottom" className="flex max-h-[85dvh] flex-col overflow-hidden">
+        <SheetContent
+          side="bottom"
+          className="flex flex-col overflow-hidden"
+          style={{
+            bottom: keyboardInset,
+            maxHeight: keyboardInset
+              ? `calc(100dvh - ${keyboardInset}px - 1rem)`
+              : "85dvh",
+          }}
+        >
           <SheetHeader>
             <SheetTitle className="text-white">Buscar no cardápio</SheetTitle>
             <SheetDescription>
