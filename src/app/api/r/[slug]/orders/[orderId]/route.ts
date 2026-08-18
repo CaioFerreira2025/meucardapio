@@ -25,6 +25,14 @@ export async function GET(
       tableNumber: true,
       billRequested: true,
       paymentMethod: true,
+      // Usados pelo ActiveOrderPanel para expirar a sessão de mesa (ver
+      // TABLE_SESSION_TTL_MS em src/lib/last-order.ts). Vêm do SERVIDOR de
+      // propósito: o carimbo guardado no localStorage depende do relógio do
+      // aparelho, que pode estar errado ou ser alterado — já `updatedAt` é
+      // a hora real da última mudança do pedido, inclusive a que o marcou
+      // como "Entregue".
+      createdAt: true,
+      updatedAt: true,
     },
   });
 

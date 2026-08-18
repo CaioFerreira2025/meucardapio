@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ORDER_STATUSES, ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/order-status";
 import { cn } from "@/lib/utils";
-import { readLastOrder } from "@/lib/last-order";
+import { clearLastOrder, readLastOrder, TABLE_SESSION_TTL_MS } from "@/lib/last-order";
 import { requestBill } from "@/app/r/[slug]/pedido/[orderId]/actions";
 
 // Mesmo "caminho feliz" da tela de acompanhamento completa
@@ -22,7 +22,27 @@ type OrderStatusInfo = {
   tableNumber: string | null;
   billRequested: boolean;
   paymentMethod: string | null;
+  /** ISO vindo da API — hora real do servidor, não do aparelho. */
+  createdAt: string;
+  /** ISO da última mudança, inclusive a que marcou como "Entregue". */
+  updatedAt: string;
 };
+
+// A sessão de mesa vale por 3 horas (TABLE_SESSION_TTL_MS) contadas da
+// última movimentação do pedido. `updatedAt` cobre os dois marcos que
+// interessam de uma vez: quando o pedido foi feito (na criação ele é igual
+// a `createdAt`) e quando passou para "Entregue" (a mudança de status
+// atualiza o campo).
+//
+// Esta checagem existe MESMO havendo o TTL no localStorage porque as duas
+// respondem a coisas diferentes: o do navegador usa o relógio do aparelho
+// (que pode estar errado ou ser alterado) e serve para evitar até a chamada
+// de rede; esta usa a hora do servidor e é a que decide de verdade.
+function isSessionExpired(order: OrderStatusInfo, now: number = Date.now()): boolean {
+  const lastActivity = Date.parse(order.updatedAt || order.createdAt);
+  if (Number.isNaN(lastActivity)) return false;
+  return now - lastActivity > TABLE_SESSION_TTL_MS;
+}
 
 // A "sessão" da mesa (ver localStorage em menu-client.tsx) é considerada
 // ativa — e o painel flutuante aparece — enquanto o pedido não foi
@@ -35,6 +55,7 @@ function isSessionActive(order: OrderStatusInfo | null): order is OrderStatusInf
   if (!order) return false;
   if (order.status === "cancelled") return false;
   if (order.status === "completed" && order.paymentMethod) return false;
+  if (isSessionExpired(order)) return false;
   return true;
 }
 
@@ -57,22 +78,55 @@ export function ActiveOrderPanel({ slug }: { slug: string }) {
   const [isRequestingBill, setIsRequestingBill] = useState(false);
 
   useEffect(() => {
+    // `readLastOrder` já devolve null (e apaga o registro) quando a sessão
+    // passou das 3 horas — então o cliente que volta no dia seguinte nem
+    // chega a fazer a chamada de rede abaixo.
     const storedOrderId = readLastOrder(slug)?.orderId;
     if (!storedOrderId) return;
 
     let cancelled = false;
+
+    // Encerra a sessão de vez: some da tela E limpa o navegador, para o
+    // registro não ser reavaliado a cada carregamento de página.
+    function endSession() {
+      clearLastOrder(slug);
+      if (!cancelled) setOrder(null);
+    }
 
     async function poll() {
       try {
         const res = await fetch(`/api/r/${slug}/orders/${storedOrderId}`, {
           cache: "no-store",
         });
+        if (res.status === 404) {
+          // Pedido não existe mais (excluído/limpo no painel do lojista):
+          // guardar essa referência para sempre não serve para nada.
+          endSession();
+          return;
+        }
         if (!res.ok) {
           if (!cancelled) setOrder(null);
           return;
         }
+
         const data = await res.json();
-        if (!cancelled) setOrder(data.order as OrderStatusInfo);
+        const fresh = data.order as OrderStatusInfo;
+
+        // Mesa fechada pela equipe (pagamento registrado), pedido cancelado
+        // ou sessão vencida: além de esconder o painel, apaga o registro do
+        // navegador — é isso que impede o cartão de voltar do além no dia
+        // seguinte.
+        const finished =
+          fresh.status === "cancelled" ||
+          (fresh.status === "completed" && Boolean(fresh.paymentMethod)) ||
+          isSessionExpired(fresh);
+
+        if (finished) {
+          endSession();
+          return;
+        }
+
+        if (!cancelled) setOrder(fresh);
       } catch {
         // Rede instável — mantém o último estado conhecido na tela e tenta
         // de novo no próximo ciclo, sem derrubar o painel por causa de uma
