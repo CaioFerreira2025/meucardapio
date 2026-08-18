@@ -53,6 +53,37 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ==========================================================================
+     COR DA MARCA — escala única
+     ==========================================================================
+     Verde esmeralda profundo. Esta é a ÚNICA definição da cor da marca no
+     projeto inteiro: landing, painel, cardápio público, botões, logo.
+     Use sempre `brand-*` (ex.: text-brand-300, bg-brand-500) em vez de
+     escrever uma cor literal.
+
+     Por que uma escala em vez de espalhar a cor pelo código: a marca já foi
+     laranja. Quando ela mudou para verde, as 451 ocorrências espalhadas em
+     63 arquivos tiveram que ser caçadas uma a uma. Com esta escala, a
+     próxima troca de cor é editar este bloco e mais nada.
+
+     IMPORTANTE — o que NÃO é cor de marca:
+     `brand-*` significa "a identidade do Meu Restaurante". Status de pedido
+     tem significado próprio e NÃO usa esta escala: âmbar/laranja = em
+     preparo, vermelho = cancelado, verde-menta claro = pronto. Se esses
+     virassem cor de marca, o quadro de pedidos perderia justamente a
+     leitura instantânea de estado que ele existe para dar — e "pronto"
+     ficaria com a mesma cor de todo botão da tela. */
+  --color-brand-50: #eaf3ee;
+  --color-brand-100: #d0e5d9;
+  --color-brand-200: #a3cbb6;
+  --color-brand-300: #6fb08f;
+  --color-brand-400: #3e9770;
+  --color-brand-500: #1a7f52;
+  --color-brand-600: #126642;
+  --color-brand-700: #0f5132;
+  --color-brand-800: #0b3d26;
+  --color-brand-900: #072818;
 }
 
 :root {
@@ -104,41 +135,41 @@
 .dark {
   /* Fonte única da identidade dark do produto inteiro (Landing Page,
      painel /dashboard e cardápio público /r/[slug]) — valores exatos
-     pedidos: fundo #0a0a0a, cards #121212, bordas #27272a, acento em
-     laranja/gradiente (--primary). Qualquer componente que use os tokens
+     pedidos: fundo #0a0c0b (carvao com leve vies verde), cards #101312, bordas #232827, acento em
+     verde esmeralda (--primary, ver a escala `brand-*` acima). Qualquer componente que use os tokens
      semânticos (bg-background, bg-card, border-border, bg-sidebar) herda
      esses valores automaticamente, sem precisar de ajuste individual. */
-  --background: #0a0a0a;
+  --background: #0a0c0b;
   --foreground: oklch(0.985 0 0);
-  --card: #121212;
+  --card: #101312;
   --card-foreground: oklch(0.985 0 0);
-  --popover: #121212;
+  --popover: #101312;
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(70.5% 0.213 47.604);
+  --primary: #1a7f52;
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: #1c1c1f;
+  --secondary: #171b19;
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: #1c1c1f;
+  --muted: #171b19;
   --muted-foreground: oklch(70.5% 0.015 286.067);
-  --accent: #1c1c1f;
+  --accent: #171b19;
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: #27272a;
-  --input: #27272a;
-  --ring: oklch(70.5% 0.213 47.604);
-  --chart-1: oklch(70.5% 0.213 47.604);
+  --border: #232827;
+  --input: #232827;
+  --ring: #1a7f52;
+  --chart-1: #1a7f52;
   --chart-2: oklch(64.5% 0.246 16.439);
   --chart-3: oklch(82.8% 0.189 84.429);
   --chart-4: oklch(0.556 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: #0a0a0a;
+  --sidebar: #0a0c0b;
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(70.5% 0.213 47.604);
+  --sidebar-primary: #1a7f52;
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: #1c1c1f;
+  --sidebar-accent: #171b19;
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: #27272a;
-  --sidebar-ring: oklch(70.5% 0.213 47.604);
+  --sidebar-border: #232827;
+  --sidebar-ring: #1a7f52;
 }
 
 @layer base {
@@ -150,5 +181,73 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* ==========================================================================
+   TEXTURAS DE FUNDO — acabamento "caro"
+   ==========================================================================
+   O fundo antigo da landing era feito de três círculos coloridos gigantes
+   com blur de 100–120px sobrepostos. Em tela grande passava; no celular os
+   três se amontoavam numa largura estreita e viravam uma mancha suja atrás
+   do título — foi exatamente esse borrão que motivou a mudança.
+
+   A troca é conceitual: em vez de manchas de cor, iluminação de estúdio.
+   Uma fonte de luz suave vinda de cima, grão de filme por cima de tudo e
+   uma vinheta fechando as bordas. É o mesmo vocabulário de fotografia de
+   produto que marcas de luxo usam — e, por não depender de blur pesado,
+   fica idêntico no celular e no computador, sem custo de renderização. */
+@layer utilities {
+  /* Grão de filme. Sem isto, um fundo escuro liso mostra "faixas" de
+     degradê (banding) em telas de celular, que é o que dá o ar barato.
+     O ruído quebra essas faixas e dá textura de papel/filme.
+     `feTurbulence` gera o ruído no próprio navegador — nenhuma imagem é
+     baixada, então não pesa no carregamento. */
+  .texture-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+  }
+
+  /* Facho de luz vindo do topo, como um spot de estúdio sobre a mesa.
+     De propósito é um degradê LINEAR de cima pra baixo, cobrindo 100% da
+     largura — não uma elipse. Uma elipse tem uma borda (por mais suave que
+     a transição seja) que em telas de celular curtas acaba caindo perto o
+     bastante do texto pra virar um "quadrado" visível atrás do headline.
+     Um degradê linear de largura total não tem borda lateral nenhuma pra
+     enxergar — só desce e desaparece, em qualquer altura de tela. */
+  .light-spot {
+    background-image: linear-gradient(
+      to bottom,
+      rgba(26, 127, 82, 0.16) 0%,
+      rgba(26, 127, 82, 0.05) 28%,
+      transparent 55%
+    );
+  }
+
+  /* Vinheta: escurece as bordas e empurra o olho para o centro. É o que
+     faz a seção "terminar" sem precisar de uma linha divisória. */
+  .vignette {
+    background-image: radial-gradient(
+      ellipse 75% 60% at 50% 45%,
+      transparent 0%,
+      rgba(10, 12, 11, 0.55) 65%,
+      #0a0c0b 100%
+    );
+  }
+
+  /* Filete horizontal que nasce e morre em transparente — separador
+     discreto entre seções, no lugar de uma borda dura de ponta a ponta. */
+  .hairline {
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      rgba(111, 176, 143, 0.28),
+      transparent
+    );
   }
 }

@@ -101,7 +101,7 @@ export function OrderCard({
           }
         }}
         tabIndex={0}
-        className="cursor-pointer transition-colors hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50"
+        className="cursor-pointer transition-colors hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50"
       >
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-white">
@@ -155,7 +155,7 @@ export function OrderCard({
           )}
           <div className="mt-2 flex justify-between border-t border-border pt-2 text-sm font-medium">
             <span>Total</span>
-            <span className="text-orange-300">{formatCents(order.totalCents)}</span>
+            <span className="text-brand-300">{formatCents(order.totalCents)}</span>
           </div>
         </CardContent>
         {(nextStatus || canCancel || canArchive || canUnarchive) && (
@@ -170,7 +170,7 @@ export function OrderCard({
             <Button
               size="sm"
               disabled={isPending}
-              className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+              className="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
               onClick={(event) => {
                 event.stopPropagation();
                 startTransition(() => updateOrderStatus(order.id, nextStatus));

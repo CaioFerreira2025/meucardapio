@@ -24,8 +24,8 @@ export default function BillingLoading() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/20">
-                <CreditCard className="size-4 text-orange-300/60" />
+              <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/20">
+                <CreditCard className="size-4 text-brand-300/60" />
               </span>
               <Skeleton className="h-4 w-32" />
             </div>

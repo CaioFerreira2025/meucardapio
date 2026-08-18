@@ -14,9 +14,9 @@ function Card({
       className={cn(
         // Preenchimento sólido de --card em ambos os temas — no escuro
         // (painel, cardápio público, ver .dark em globals.css) isso
-        // resolve para o cinza sólido #121212 pedido, com contorno em
+        // resolve para o carvão sólido #101312 pedido, com contorno em
         // --border (#27272a) e sombra suave para dar profundidade sobre o
-        // fundo #0a0a0a.
+        // fundo #0a0c0b.
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl dark:shadow-xl dark:shadow-black/30 dark:ring-border",
         className
       )}

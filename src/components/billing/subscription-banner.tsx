@@ -126,9 +126,9 @@ const TONES = {
     title: "text-amber-100",
   },
   info: {
-    wrapper: "border-orange-500/25 bg-orange-500/[0.05]",
-    icon: "text-orange-300",
-    title: "text-orange-100",
+    wrapper: "border-brand-500/25 bg-brand-500/[0.05]",
+    icon: "text-brand-300",
+    title: "text-brand-100",
   },
   success: {
     wrapper: "border-emerald-500/25 bg-emerald-500/[0.05]",
@@ -174,7 +174,7 @@ function Banner({
         className={cn(
           "shrink-0",
           tone === "danger" &&
-            "bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+            "bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
         )}
         render={<Link href={action.href}>{action.label}</Link>}
       />

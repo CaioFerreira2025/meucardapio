@@ -43,7 +43,7 @@ export function AdminShell({
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"
       >
-        <div className="absolute top-[-15%] left-1/3 h-[32rem] w-[32rem] rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="absolute top-[-15%] left-1/3 h-[32rem] w-[32rem] rounded-full bg-brand-600/10 blur-[130px]" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 

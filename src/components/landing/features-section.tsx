@@ -49,15 +49,24 @@ const SMALL_FEATURES: Array<{
   },
 ];
 
+// Antes, cada recurso tinha um ícone de uma cor diferente — laranja,
+// âmbar, rosa, verde, azul, violeta. Seis matizes na mesma tela é o
+// vocabulário visual de painel de administração genérico, e era o que mais
+// destoava do resto: nenhuma marca que quer parecer cara pinta seus ícones
+// de arco-íris.
+//
+// Agora a variação é de INTENSIDADE, não de matiz: todos os ícones são
+// verdes da marca, uns mais claros, outros mais fundos. O olho ainda
+// distingue um card do outro, mas a página passa a ler como uma coisa só.
+// As chaves antigas continuam existindo para não precisar mexer em cada
+// item da lista acima.
 const COLOR_MAP: Record<string, string> = {
-  orange: "from-orange-400/20 to-orange-600/20 text-orange-300 ring-orange-500/30",
-  amber: "from-amber-300/20 to-amber-500/20 text-amber-300 ring-amber-400/30",
-  rose: "from-rose-400/20 to-rose-600/20 text-rose-300 ring-rose-500/30",
-  emerald:
-    "from-emerald-400/20 to-emerald-600/20 text-emerald-300 ring-emerald-500/30",
-  sky: "from-sky-400/20 to-sky-600/20 text-sky-300 ring-sky-500/30",
-  violet:
-    "from-violet-400/20 to-violet-600/20 text-violet-300 ring-violet-500/30",
+  orange: "from-brand-300/25 to-brand-500/25 text-brand-200 ring-brand-400/30",
+  amber: "from-brand-400/20 to-brand-600/20 text-brand-300 ring-brand-500/30",
+  rose: "from-brand-500/20 to-brand-700/20 text-brand-300 ring-brand-500/25",
+  emerald: "from-brand-300/20 to-brand-500/20 text-brand-200 ring-brand-400/25",
+  sky: "from-brand-400/25 to-brand-700/25 text-brand-300 ring-brand-500/30",
+  violet: "from-brand-500/25 to-brand-800/25 text-brand-200 ring-brand-600/30",
 };
 
 const MINI_STATS = [
@@ -71,7 +80,7 @@ export function FeaturesSection() {
     <section className="relative overflow-hidden bg-background py-24 sm:py-32">
       <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
         <Reveal className="mx-auto mb-14 flex max-w-2xl flex-col items-center gap-3 text-center">
-          <span className="text-sm font-semibold tracking-wide text-orange-400 uppercase">
+          <span className="text-sm font-semibold tracking-wide text-brand-300 uppercase">
             Tudo o que você precisa
           </span>
           <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -92,11 +101,11 @@ export function FeaturesSection() {
               <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-7 backdrop-blur-sm transition-colors hover:border-white/20">
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-orange-500/10 blur-[80px]"
+                  className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-brand-500/10 blur-[80px]"
                 />
                 <div className="relative">
-                  <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/30">
-                    <Smartphone className="size-5 text-orange-300" strokeWidth={2} />
+                  <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/30">
+                    <Smartphone className="size-5 text-brand-300" strokeWidth={2} />
                   </div>
                   <h3 className="mb-2 text-xl font-semibold text-white">
                     Tudo em um só lugar
@@ -147,8 +156,8 @@ export function FeaturesSection() {
 
           <RevealItem className="sm:col-span-2 lg:col-span-4">
             <div className="flex h-full flex-col items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/[0.05] sm:flex-row sm:items-center">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 ring-1 ring-emerald-500/30">
-                <Smartphone className="size-5 text-emerald-300" strokeWidth={2} />
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400/20 to-brand-600/20 ring-1 ring-brand-500/30">
+                <Smartphone className="size-5 text-brand-300" strokeWidth={2} />
               </div>
               <div>
                 <h3 className="mb-1 text-base font-semibold text-white">

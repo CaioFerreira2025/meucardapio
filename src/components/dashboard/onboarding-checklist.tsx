@@ -72,7 +72,7 @@ export function OnboardingChecklist({
     <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-card p-5">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-orange-500/10 blur-[90px]"
+        className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-brand-500/10 blur-[90px]"
       />
 
       <div className="relative flex flex-wrap items-center justify-between gap-3">
@@ -85,7 +85,7 @@ export function OnboardingChecklist({
             estar rodando.
           </p>
         </div>
-        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-orange-200 ring-1 ring-orange-500/20">
+        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-brand-200 ring-1 ring-brand-500/20">
           {completed}/{steps.length} concluídos
         </span>
       </div>
@@ -94,7 +94,7 @@ export function OnboardingChecklist({
           precisar contar os checks um a um. */}
       <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-white/5">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500 transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-500 transition-all duration-500"
           style={{ width: `${(completed / steps.length) * 100}%` }}
         />
       </div>
@@ -110,7 +110,7 @@ export function OnboardingChecklist({
                 step.done
                   ? "bg-white/[0.02] ring-1 ring-white/5"
                   : isNext
-                    ? "bg-orange-500/[0.06] ring-1 ring-orange-500/25"
+                    ? "bg-brand-500/[0.06] ring-1 ring-brand-500/25"
                     : "bg-white/[0.02] ring-1 ring-white/5"
               )}
             >
@@ -121,7 +121,7 @@ export function OnboardingChecklist({
                     step.done
                       ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
                       : isNext
-                        ? "bg-gradient-to-br from-orange-500 to-rose-500 text-white ring-orange-500/30"
+                        ? "bg-gradient-to-br from-brand-600 to-brand-500 text-white ring-brand-500/30"
                         : "bg-white/5 text-muted-foreground ring-white/10"
                   )}
                 >
@@ -153,7 +153,7 @@ export function OnboardingChecklist({
                   className={cn(
                     "shrink-0 gap-1.5",
                     isNext &&
-                      "bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+                      "bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
                   )}
                   render={
                     <Link href={step.href}>

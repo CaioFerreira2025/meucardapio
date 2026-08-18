@@ -47,7 +47,7 @@ export default async function EntregasModule({ restaurantId }: ModulePageProps) 
                         Grátis
                       </span>
                     ) : (
-                      <span className="text-orange-300">{formatCents(zone.feeCents)}</span>
+                      <span className="text-brand-300">{formatCents(zone.feeCents)}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">

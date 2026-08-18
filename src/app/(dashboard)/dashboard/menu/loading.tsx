@@ -27,7 +27,7 @@ export default function MenuLoading() {
           <Card key={categoryIndex}>
             <CardHeader className="border-b border-border pb-4">
               <div className="flex items-center gap-2">
-                <span className="size-1.5 shrink-0 rounded-full bg-gradient-to-br from-orange-400/50 to-rose-500/50" />
+                <span className="size-1.5 shrink-0 rounded-full bg-gradient-to-br from-brand-400/50 to-brand-500/50" />
                 <Skeleton className="h-4 w-28" />
               </div>
             </CardHeader>

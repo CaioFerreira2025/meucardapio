@@ -117,7 +117,7 @@ export function QrCodeCard({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <QrCode className="size-4 text-orange-300" />
+          <QrCode className="size-4 text-brand-300" />
           QR Code do cardápio
         </CardTitle>
         <CardDescription>
@@ -170,7 +170,7 @@ export function QrCodeCard({
               render={
                 <Button
                   size="sm"
-                  className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+                  className="gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
                 />
               }
             >

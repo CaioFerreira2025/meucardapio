@@ -139,7 +139,7 @@ function BreakdownCard({
   emphasis?: boolean;
 }) {
   const colorMap = {
-    orange: "from-orange-400/20 to-orange-600/20 text-orange-300 ring-orange-500/20",
+    orange: "from-brand-400/20 to-brand-600/20 text-brand-300 ring-brand-500/20",
     emerald:
       "from-emerald-400/20 to-emerald-600/20 text-emerald-300 ring-emerald-500/20",
     violet: "from-violet-400/20 to-violet-600/20 text-violet-300 ring-violet-500/20",
@@ -227,12 +227,12 @@ function TurnoCard({ openSession }: { openSession: OpenSession | null }) {
       <Card className="relative overflow-hidden">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-28 -right-20 h-56 w-56 rounded-full bg-orange-500/10 blur-[90px]"
+          className="pointer-events-none absolute -top-28 -right-20 h-56 w-56 rounded-full bg-brand-500/10 blur-[90px]"
         />
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2.5 text-base text-white">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/25">
-              <LockOpen className="size-4 text-orange-300" />
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/25">
+              <LockOpen className="size-4 text-brand-300" />
             </span>
             Abra o turno para começar o dia
           </CardTitle>
@@ -262,7 +262,7 @@ function TurnoCard({ openSession }: { openSession: OpenSession | null }) {
                 key={step.title}
                 className="flex flex-1 gap-2.5 rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/5"
               >
-                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-rose-500 text-[10px] font-bold text-white">
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-500 text-[10px] font-bold text-white">
                   {index + 1}
                 </span>
                 <div className="min-w-0">
@@ -291,7 +291,7 @@ function TurnoCard({ openSession }: { openSession: OpenSession | null }) {
             </div>
             <Button
               disabled={isPending}
-              className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+              className="gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
               onClick={handleOpen}
             >
               <LockOpen className="size-4" />
@@ -348,7 +348,7 @@ function TurnoCard({ openSession }: { openSession: OpenSession | null }) {
                   </div>
                   <div className="flex justify-between border-t border-border pt-1 font-medium">
                     <span className="text-muted-foreground">Saldo esperado</span>
-                    <span className="text-orange-300">
+                    <span className="text-brand-300">
                       {formatCents(expectedSoFarCents)}
                     </span>
                   </div>
@@ -406,9 +406,9 @@ function TurnoCard({ openSession }: { openSession: OpenSession | null }) {
               {formatCents(openSession.cashRevenueSinceOpenCents)}
             </p>
           </div>
-          <div className="rounded-xl bg-orange-500/10 p-3 ring-1 ring-orange-500/20">
-            <p className="text-xs text-orange-200/80">Saldo esperado na gaveta</p>
-            <p className="text-lg font-semibold text-orange-300">
+          <div className="rounded-xl bg-brand-500/10 p-3 ring-1 ring-brand-500/20">
+            <p className="text-xs text-brand-200/80">Saldo esperado na gaveta</p>
+            <p className="text-lg font-semibold text-brand-300">
               {formatCents(expectedSoFarCents)}
             </p>
           </div>
@@ -466,7 +466,7 @@ function UntaggedOrdersCard({ orders }: { orders: UntaggedOrder[] }) {
               </p>
               <p className="text-xs text-muted-foreground">
                 {formatDateTime(order.createdAt)} ·{" "}
-                <span className="text-orange-300">
+                <span className="text-brand-300">
                   {formatCents(order.totalCents)}
                 </span>
               </p>

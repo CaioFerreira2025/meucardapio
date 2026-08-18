@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 
 // Mesma identidade dark do resto do produto (Landing Page, painel,
-// cardápio público — ver .dark em globals.css): fundo #0a0a0a, brilhos
-// radiais sutis em laranja/rosa, Card sólido em #121212. Login e Cadastro
+// cardápio público — ver .dark em globals.css): fundo #0a0c0b, facho de
+// luz suave em verde esmeralda, Card sólido em #101312. Login e Cadastro
 // deixam de ser a única zona "clara" do fluxo.
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"
       >
-        <div className="absolute top-[-15%] left-1/3 h-[32rem] w-[32rem] rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="absolute top-[-15%] left-1/3 h-[32rem] w-[32rem] rounded-full bg-brand-600/10 blur-[130px]" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 

@@ -168,7 +168,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <Button
-          className="gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+          className="gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
           render={
             <Link href={`/r/${restaurant!.slug}`} target="_blank">
               Ver cardápio público
@@ -218,7 +218,7 @@ export default async function DashboardPage() {
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Flame className="size-4 text-orange-400" />
+              <Flame className="size-4 text-brand-300" />
               Mais vendido hoje
             </CardTitle>
             <CardDescription>
@@ -270,7 +270,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2 sm:flex-row">
             <Button
-              className="w-full gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400 sm:w-auto"
+              className="w-full gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300 sm:w-auto"
               render={
                 <Link href="/dashboard/menu">
                   <PlusCircle className="size-4" />
@@ -302,7 +302,7 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <div className="flex flex-col gap-3 px-(--card-spacing) sm:flex-row sm:items-center sm:justify-between">
-            <code className="min-w-0 truncate rounded-lg bg-black/20 px-3 py-2 text-sm text-orange-200 ring-1 ring-white/10">
+            <code className="min-w-0 truncate rounded-lg bg-black/20 px-3 py-2 text-sm text-brand-200 ring-1 ring-white/10">
               {publicMenuUrl}
             </code>
             <CopyLinkButton url={publicMenuUrl} />

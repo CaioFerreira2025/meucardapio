@@ -160,14 +160,14 @@ export function RegisterForm() {
         <CardFooter className="flex flex-col gap-4">
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+            className="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Criando conta..." : "Criar conta"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Já tem conta?{" "}
-            <Link href="/login" className="font-medium text-orange-300 underline-offset-4 hover:underline">
+            <Link href="/login" className="font-medium text-brand-300 underline-offset-4 hover:underline">
               Entrar
             </Link>
           </p>

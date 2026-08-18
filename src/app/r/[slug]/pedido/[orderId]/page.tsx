@@ -62,7 +62,7 @@ export default async function OrderTrackingPage(
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"
       >
-        <div className="absolute top-[-15%] left-1/3 h-[28rem] w-[28rem] rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="absolute top-[-15%] left-1/3 h-[28rem] w-[28rem] rounded-full bg-brand-600/10 blur-[130px]" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 
@@ -100,7 +100,7 @@ export default async function OrderTrackingPage(
                           className={cn(
                             "flex size-7 shrink-0 items-center justify-center rounded-full ring-1 transition-colors",
                             isDone
-                              ? "bg-gradient-to-br from-orange-500 to-rose-500 text-white ring-orange-500/30"
+                              ? "bg-gradient-to-br from-brand-600 to-brand-500 text-white ring-brand-500/30"
                               : "bg-white/5 text-muted-foreground ring-white/10"
                           )}
                         >
@@ -123,7 +123,7 @@ export default async function OrderTrackingPage(
                         <div
                           className={cn(
                             "mx-1.5 h-0.5 flex-1 rounded-full transition-colors",
-                            index < currentStepIndex ? "bg-orange-500" : "bg-white/10"
+                            index < currentStepIndex ? "bg-brand-500" : "bg-white/10"
                           )}
                         />
                       )}
@@ -153,7 +153,7 @@ export default async function OrderTrackingPage(
 
             <div className="flex justify-between border-t border-border pt-4 text-sm font-medium">
               <span className="text-muted-foreground">Total</span>
-              <span className="text-lg font-semibold text-orange-300">
+              <span className="text-lg font-semibold text-brand-300">
                 {formatCents(order.totalCents)}
               </span>
             </div>

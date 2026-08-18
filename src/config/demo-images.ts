@@ -59,6 +59,10 @@ export const DEMO_IMAGES = {
     "photo-1554866585-cd94860890b7",
     "Lata de refrigerante gelada, coberta de gotas de condensação"
   ),
+  vinhoTinto: unsplash(
+    "photo-1553361371-9b22f78e8b1d",
+    "Vinho tinto sendo servido numa taça, com corte de carne nobre desfocado ao fundo em ambiente escuro e iluminação de estúdio"
+  ),
   sucoNatural: unsplash(
     "photo-1600271886742-f049cd451bba",
     "Copo de suco natural de laranja"

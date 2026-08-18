@@ -131,7 +131,7 @@ export default async function RelatoriosModule({ restaurantId }: ModulePageProps
                   <p className="truncate text-sm text-white">{product.name}</p>
                   <p className="shrink-0 text-xs text-muted-foreground">
                     {product.quantity}x ·{" "}
-                    <span className="text-orange-300">
+                    <span className="text-brand-300">
                       {formatCents(product.revenueCents)}
                     </span>
                   </p>
@@ -140,7 +140,7 @@ export default async function RelatoriosModule({ restaurantId }: ModulePageProps
                     frente" sem precisar comparar números mentalmente. */}
                 <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/5">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500"
+                    className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-500"
                     style={{ width: `${(product.quantity / maxQuantity) * 100}%` }}
                   />
                 </div>

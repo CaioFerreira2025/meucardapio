@@ -137,7 +137,7 @@ export function DashboardShell({
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"
       >
-        <div className="absolute top-[-15%] left-1/3 h-[32rem] w-[32rem] rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="absolute top-[-15%] left-1/3 h-[32rem] w-[32rem] rounded-full bg-brand-600/10 blur-[130px]" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 
@@ -195,11 +195,11 @@ export function DashboardShell({
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white",
                   isActive &&
-                    "bg-gradient-to-r from-orange-500/15 to-rose-500/10 text-white ring-1 ring-orange-500/20"
+                    "bg-gradient-to-r from-brand-600/15 to-brand-500/10 text-white ring-1 ring-brand-500/20"
                 )}
               >
                 <item.icon
-                  className={cn("size-4", isActive && "text-orange-400")}
+                  className={cn("size-4", isActive && "text-brand-300")}
                   strokeWidth={2}
                 />
                 {item.label}
@@ -222,7 +222,7 @@ export function DashboardShell({
           <Link
             href={`/r/${restaurantSlug}`}
             target="_blank"
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-orange-300 transition-colors hover:bg-white/5"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-brand-300 transition-colors hover:bg-white/5"
           >
             <ExternalLink className="size-4" strokeWidth={2} />
             Ver cardápio público
@@ -312,7 +312,7 @@ export function DashboardShell({
                 href={item.href}
                 className={cn(
                   "flex w-[4.5rem] shrink-0 flex-col items-center gap-1 py-2.5 text-[11px] font-medium whitespace-nowrap text-zinc-500 transition-colors",
-                  isActive && "text-orange-400"
+                  isActive && "text-brand-300"
                 )}
               >
                 <item.icon className="size-5" strokeWidth={isActive ? 2.5 : 2} />

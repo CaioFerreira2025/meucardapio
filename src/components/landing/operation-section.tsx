@@ -47,13 +47,13 @@ export function OperationSection() {
   return (
     <section className="relative overflow-hidden bg-background py-24 sm:py-32">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/4 right-1/4 h-[30rem] w-[30rem] rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="light-spot absolute inset-0" />
       </div>
 
       <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
         <Reveal>
           <div className="flex flex-col items-center gap-3 text-center">
-            <span className="rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-orange-300 uppercase ring-1 ring-orange-500/20">
+            <span className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-300 uppercase ring-1 ring-brand-500/20">
               Organização do dia a dia
             </span>
             <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -71,10 +71,10 @@ export function OperationSection() {
             <Reveal key={block.eyebrow}>
               <div className="grid gap-6 rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:grid-cols-2 lg:items-center">
                 <div className="flex flex-col gap-3">
-                  <span className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/25">
-                    <block.icon className="size-5 text-orange-300" />
+                  <span className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/25">
+                    <block.icon className="size-5 text-brand-300" />
                   </span>
-                  <p className="text-xs font-semibold tracking-wide text-orange-300 uppercase">
+                  <p className="text-xs font-semibold tracking-wide text-brand-300 uppercase">
                     {block.eyebrow}
                   </p>
                   <h3 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
@@ -98,7 +98,7 @@ export function OperationSection() {
                   <ul className="flex flex-col gap-2">
                     {block.bullets.map((bullet) => (
                       <li key={bullet} className="flex items-start gap-2.5 text-sm text-zinc-300">
-                        <ArrowRight className="mt-0.5 size-4 shrink-0 text-orange-300" />
+                        <ArrowRight className="mt-0.5 size-4 shrink-0 text-brand-300" />
                         {bullet}
                       </li>
                     ))}

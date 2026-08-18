@@ -45,11 +45,11 @@ export function EmptyState({
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-orange-500/10 blur-[80px]"
+        className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-brand-500/10 blur-[80px]"
       />
 
-      <span className="relative flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/25">
-        <Icon className="size-6 text-orange-300" />
+      <span className="relative flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/25">
+        <Icon className="size-6 text-brand-300" />
       </span>
 
       <div className="relative flex max-w-md flex-col gap-1.5">
@@ -61,7 +61,7 @@ export function EmptyState({
         <div className="relative mt-1 flex flex-col items-center gap-2 sm:flex-row">
           {action && (
             <Button
-              className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+              className="gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
               render={<Link href={action.href}>{action.label}</Link>}
             />
           )}

@@ -69,7 +69,7 @@ export function CategoryCard({
     <Card>
       <CardHeader className="border-b border-border pb-4">
         <div className="flex items-center gap-2">
-          <span className="size-1.5 shrink-0 rounded-full bg-gradient-to-br from-orange-400 to-rose-500" />
+          <span className="size-1.5 shrink-0 rounded-full bg-gradient-to-br from-brand-400 to-brand-500" />
           <CardTitle className="text-white">{category.name}</CardTitle>
           <span className="text-xs font-normal text-muted-foreground">
             ({products.length})

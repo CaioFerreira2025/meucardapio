@@ -56,7 +56,7 @@ export function PricingCards({
                 className={cn(
                   "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors",
                   active
-                    ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/25"
+                    ? "bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/25"
                     : "text-zinc-400 hover:text-white"
                 )}
               >
@@ -67,7 +67,7 @@ export function PricingCards({
                       "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
                       active
                         ? "bg-white/20 text-white"
-                        : "bg-emerald-500/15 text-emerald-300"
+                        : "bg-brand-500/20 text-brand-200"
                     )}
                   >
                     {option.badge}
@@ -81,8 +81,8 @@ export function PricingCards({
         {/* A frase de incentivo só aparece no anual — é o argumento daquele
             ciclo, e mostrá-la sempre esvaziaria o peso dela. */}
         {isAnnual && (
-          <p className="flex max-w-md items-center justify-center gap-2 text-center text-sm text-emerald-200/90">
-            <Sparkles className="size-4 shrink-0 text-emerald-300" />
+          <p className="flex max-w-md items-center justify-center gap-2 text-center text-sm text-brand-200/90">
+            <Sparkles className="size-4 shrink-0 text-brand-300" />
             {ANNUAL_PITCH}
           </p>
         )}
@@ -107,14 +107,14 @@ export function PricingCards({
                   className={cn(
                     "relative flex h-full flex-col overflow-hidden rounded-2xl border p-7 backdrop-blur-sm transition-colors",
                     plan.highlighted
-                      ? "border-orange-500/40 bg-gradient-to-b from-orange-500/[0.08] to-white/[0.02] shadow-2xl shadow-orange-950/40"
+                      ? "border-brand-500/40 bg-gradient-to-b from-brand-600/[0.08] to-white/[0.02] shadow-2xl shadow-brand-900/40"
                       : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]"
                   )}
                 >
                   {plan.highlighted && (
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute -top-20 -right-16 h-56 w-56 rounded-full bg-orange-500/20 blur-[90px]"
+                      className="pointer-events-none absolute -top-20 -right-16 h-56 w-56 rounded-full bg-brand-500/20 blur-[90px]"
                     />
                   )}
 
@@ -122,12 +122,12 @@ export function PricingCards({
                       escolhido": duas etiquetas competindo no mesmo canto
                       brigariam pela atenção e nenhuma seria lida. */}
                   {isAnnual ? (
-                    <span className="absolute top-6 right-6 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-[11px] font-semibold tracking-wide text-white uppercase shadow-md shadow-emerald-600/30">
+                    <span className="absolute top-6 right-6 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 px-3 py-1 text-[11px] font-semibold tracking-wide text-white uppercase shadow-md shadow-brand-800/40">
                       Economize 30%
                     </span>
                   ) : (
                     plan.highlighted && (
-                      <span className="absolute top-6 right-6 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 px-3 py-1 text-[11px] font-semibold tracking-wide text-white uppercase shadow-md shadow-orange-600/30">
+                      <span className="absolute top-6 right-6 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-3 py-1 text-[11px] font-semibold tracking-wide text-white uppercase shadow-md shadow-brand-800/30">
                         Mais escolhido
                       </span>
                     )
@@ -174,7 +174,7 @@ export function PricingCards({
                     </p>
 
                     {savedPerYearCents > 0 && (
-                      <p className="mt-2 inline-flex rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-500/20">
+                      <p className="mt-2 inline-flex rounded-lg bg-brand-500/10 px-2.5 py-1 text-xs font-medium text-brand-300 ring-1 ring-brand-500/25">
                         Você economiza {formatCents(savedPerYearCents)}
                       </p>
                     )}
@@ -187,7 +187,7 @@ export function PricingCards({
                           className={cn(
                             "flex size-4.5 shrink-0 items-center justify-center rounded-full",
                             plan.highlighted
-                              ? "bg-orange-500/20 text-orange-300"
+                              ? "bg-brand-500/20 text-brand-300"
                               : "bg-white/10 text-zinc-300"
                           )}
                         >
@@ -206,7 +206,7 @@ export function PricingCards({
                     className={cn(
                       "relative mt-7 h-11 rounded-xl font-semibold",
                       plan.highlighted
-                        ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/30 hover:from-orange-400 hover:to-rose-400"
+                        ? "bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/30 hover:from-brand-400 hover:to-brand-300"
                         : "border-white/15 bg-white/5 text-white hover:bg-white/10"
                     )}
                   />

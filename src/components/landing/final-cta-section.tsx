@@ -22,8 +22,8 @@ export function FinalCtaSection() {
         <Reveal>
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 to-zinc-950 px-6 py-16 text-center shadow-2xl sm:px-16">
             <div aria-hidden className="pointer-events-none absolute inset-0">
-              <div className="absolute top-[-30%] left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-orange-600/25 blur-[110px]" />
-              <div className="absolute right-[-10%] bottom-[-30%] h-72 w-72 rounded-full bg-rose-600/20 blur-[100px]" />
+              <div className="light-spot absolute inset-0" />
+              
             </div>
 
             <div className="relative flex flex-col items-center gap-5">
@@ -40,7 +40,7 @@ export function FinalCtaSection() {
               <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                 <Button
                   size="lg"
-                  className="h-12 gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-6 text-base font-semibold text-white shadow-lg shadow-orange-600/30 hover:from-orange-400 hover:to-rose-400"
+                  className="h-12 gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 text-base font-semibold text-white shadow-lg shadow-brand-800/30 hover:from-brand-400 hover:to-brand-300"
                   render={
                     <Link href="/register">
                       Criar Conta Grátis

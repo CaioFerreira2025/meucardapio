@@ -39,7 +39,7 @@ export function HowItWorksSection() {
     <section className="relative overflow-hidden bg-background py-24 sm:py-32">
       <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
         <Reveal className="mx-auto mb-16 flex max-w-2xl flex-col items-center gap-3 text-center">
-          <span className="text-sm font-semibold tracking-wide text-orange-400 uppercase">
+          <span className="text-sm font-semibold tracking-wide text-brand-300 uppercase">
             Do zero ao primeiro pedido
           </span>
           <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -57,9 +57,9 @@ export function HowItWorksSection() {
           />
           {STEPS.map((item) => (
             <RevealItem key={item.step} className="relative flex flex-col items-center text-center">
-              <div className="relative mb-5 flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-orange-500/20 to-rose-500/20 shadow-lg shadow-orange-900/20">
-                <item.icon className="size-7 text-orange-300" strokeWidth={2} />
-                <span className="absolute -top-2.5 -right-2.5 flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-rose-500 text-xs font-bold text-white shadow-md">
+              <div className="relative mb-5 flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-brand-600/20 to-brand-500/20 shadow-lg shadow-brand-900/30">
+                <item.icon className="size-7 text-brand-300" strokeWidth={2} />
+                <span className="absolute -top-2.5 -right-2.5 flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-500 text-xs font-bold text-white shadow-md">
                   {item.step}
                 </span>
               </div>

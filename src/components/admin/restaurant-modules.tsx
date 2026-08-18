@@ -67,7 +67,7 @@ export function RestaurantModules({
               <Sparkles
                 className={
                   enabled
-                    ? "mt-0.5 size-4 shrink-0 text-orange-300"
+                    ? "mt-0.5 size-4 shrink-0 text-brand-300"
                     : "mt-0.5 size-4 shrink-0 text-muted-foreground"
                 }
               />

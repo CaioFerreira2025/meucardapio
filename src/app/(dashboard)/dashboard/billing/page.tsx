@@ -40,7 +40,7 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_STYLE: Record<string, string> = {
   trialing: "bg-violet-500/15 text-violet-300 ring-violet-500/25",
   active: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/25",
-  past_due: "bg-orange-500/15 text-orange-300 ring-orange-500/25",
+  past_due: "bg-brand-500/15 text-brand-300 ring-brand-500/25",
   canceled: "bg-white/10 text-zinc-400 ring-white/10",
   unpaid: "bg-rose-500/15 text-rose-300 ring-rose-500/25",
   incomplete: "bg-white/10 text-zinc-400 ring-white/10",
@@ -75,14 +75,14 @@ export default async function BillingPage() {
       <Card
         className={cn(
           "max-w-lg overflow-hidden",
-          subscription?.status === "active" && "ring-1 ring-orange-500/30"
+          subscription?.status === "active" && "ring-1 ring-brand-500/30"
         )}
       >
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg text-white">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/20">
-                <CreditCard className="size-4 text-orange-300" />
+              <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/20">
+                <CreditCard className="size-4 text-brand-300" />
               </span>
               {plan ? `${plan.name} · ${formatCycleLabel(planPrice!.cycle)}` : "Nenhum plano ativo"}
             </CardTitle>
@@ -128,7 +128,7 @@ export default async function BillingPage() {
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
               {plan.features.map((feature) => (
                 <li key={feature} className="flex items-center gap-2">
-                  <Check className="size-4 shrink-0 text-orange-400" />
+                  <Check className="size-4 shrink-0 text-brand-300" />
                   {feature}
                 </li>
               ))}
@@ -140,7 +140,7 @@ export default async function BillingPage() {
             <CancelSubscriptionButton />
           ) : (
             <Button
-              className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+              className="gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
               render={
                 <Link href="/pricing">
                   <Sparkles className="size-4" />

@@ -43,7 +43,7 @@ export default async function CuponsModule({ restaurantId }: ModulePageProps) {
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <code className="rounded-lg bg-white/[0.06] px-2.5 py-1 font-mono text-sm font-semibold tracking-wider text-orange-200">
+                    <code className="rounded-lg bg-white/[0.06] px-2.5 py-1 font-mono text-sm font-semibold tracking-wider text-brand-200">
                       {coupon.code}
                     </code>
                     <span className="text-sm font-medium text-white">

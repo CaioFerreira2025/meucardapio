@@ -44,7 +44,7 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_STYLE: Record<string, string> = {
   trialing: "bg-violet-500/15 text-violet-300 ring-violet-500/25",
   active: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/25",
-  past_due: "bg-orange-500/15 text-orange-300 ring-orange-500/25",
+  past_due: "bg-brand-500/15 text-brand-300 ring-brand-500/25",
   canceled: "bg-white/10 text-zinc-400 ring-white/10",
   unpaid: "bg-rose-500/15 text-rose-300 ring-rose-500/25",
   incomplete: "bg-white/10 text-zinc-400 ring-white/10",
@@ -61,8 +61,8 @@ export function SubscribersTable({ subscribers }: { subscribers: Subscriber[] })
   if (subscribers.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">
-        <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/20">
-          <Store className="size-5 text-orange-300" />
+        <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/20">
+          <Store className="size-5 text-brand-300" />
         </div>
         <p className="text-sm text-muted-foreground">
           Nenhum restaurante cadastrado ainda.
@@ -135,7 +135,7 @@ function SubscriberRow({ subscriber }: { subscriber: Subscriber }) {
             href={whatsappUrl(subscriber.whatsapp)}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 text-orange-300 underline-offset-4 hover:underline"
+            className="inline-flex items-center gap-1 text-brand-300 underline-offset-4 hover:underline"
           >
             {subscriber.whatsapp}
             <ExternalLink className="size-3" />

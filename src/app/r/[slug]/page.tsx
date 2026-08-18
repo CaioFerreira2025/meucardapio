@@ -88,13 +88,16 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
     // tela (o cardápio já não tinha isso antes, mas outras páginas do
     // projeto — ver src/app/page.tsx — já usam o mesmo padrão).
     <DarkPortalRoot className="dark relative min-h-dvh w-full overflow-x-hidden bg-background text-foreground">
+      {/* Mesmo tratamento de fundo da landing: facho de luz + vinheta, sem
+          blur. Aqui isso importa ainda mais do que lá — esta é a tela que o
+          cliente do restaurante abre no celular, muitas vezes em aparelho
+          simples, e dois círculos de 28rem com blur de 130px custam caro
+          para compor a cada rolagem. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 overflow-hidden"
-      >
-        <div className="absolute top-[-15%] left-1/4 h-[28rem] w-[28rem] rounded-full bg-orange-600/10 blur-[130px]" />
-        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
-      </div>
+        className="light-spot pointer-events-none fixed inset-0 overflow-hidden"
+      />
+      <div aria-hidden className="vignette pointer-events-none fixed inset-0" />
 
       <div className="relative mx-auto flex w-full max-w-3xl flex-col px-4 sm:px-6">
         {/* Hero do restaurante */}
@@ -105,7 +108,7 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
               fotos de produto). Sem logo, mantém o selo genérico de sempre,
               sem nenhuma mudança visual pra quem ainda não configurou. */}
           {restaurant.logoUrl ? (
-            <span className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-xl shadow-orange-600/20 ring-1 ring-white/10">
+            <span className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-xl shadow-brand-800/20 ring-1 ring-white/10">
               <Image
                 src={restaurant.logoUrl}
                 alt={restaurant.name}
@@ -116,7 +119,7 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
               />
             </span>
           ) : (
-            <span className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-rose-500 shadow-xl shadow-orange-600/30 ring-1 ring-white/10">
+            <span className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-xl shadow-brand-800/30 ring-1 ring-white/10">
               <UtensilsCrossed className="size-7 text-white" strokeWidth={2} />
             </span>
           )}

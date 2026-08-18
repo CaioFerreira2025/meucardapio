@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const COLOR_MAP: Record<string, string> = {
-  orange: "from-orange-400/20 to-orange-600/20 text-orange-300 ring-orange-500/20",
+  orange: "from-brand-400/20 to-brand-600/20 text-brand-300 ring-brand-500/20",
   emerald:
     "from-emerald-400/20 to-emerald-600/20 text-emerald-300 ring-emerald-500/20",
   violet: "from-violet-400/20 to-violet-600/20 text-violet-300 ring-violet-500/20",

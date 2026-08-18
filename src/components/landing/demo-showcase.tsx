@@ -13,12 +13,12 @@ export function DemoShowcase() {
   return (
     <section className="relative overflow-hidden bg-background py-24 sm:py-32">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/2 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="light-spot absolute inset-0" />
       </div>
 
       <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6">
         <Reveal className="mx-auto mb-16 flex max-w-2xl flex-col items-center gap-3 text-center">
-          <span className="text-sm font-semibold tracking-wide text-orange-400 uppercase">
+          <span className="text-sm font-semibold tracking-wide text-brand-300 uppercase">
             Como funciona na prática
           </span>
           <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -48,10 +48,10 @@ export function DemoShowcase() {
 
                   <div className="px-5 pt-4 pb-24">
                     <p className="text-lg font-semibold text-zinc-900">
-                      Lanchonete do João
+                      Fogo Nobre
                     </p>
                     <p className="text-xs text-zinc-500">
-                      Lanches, porções e bebidas.
+                      Alta gastronomia e cortes nobres.
                     </p>
 
                     <p className="mt-5 text-xs font-semibold tracking-wide text-zinc-400 uppercase">
@@ -101,8 +101,8 @@ export function DemoShowcase() {
                       <div className="flex gap-3 p-3">
                         <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-zinc-100">
                           <Image
-                            src={DEMO_IMAGES.refrigerante.url}
-                            alt={DEMO_IMAGES.refrigerante.alt}
+                            src={DEMO_IMAGES.vinhoTinto.url}
+                            alt={DEMO_IMAGES.vinhoTinto.alt}
                             fill
                             sizes="64px"
                             className="object-cover"
@@ -110,11 +110,11 @@ export function DemoShowcase() {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-zinc-900">
-                            Refrigerante lata
+                            Vinho Tinto Reservado
                           </p>
-                          <p className="text-[11px] text-zinc-500">350ml</p>
+                          <p className="text-[11px] text-zinc-500">Taça · 150ml</p>
                           <p className="mt-2 text-sm font-semibold text-zinc-900">
-                            R$ 6,00
+                            R$ 34,90
                           </p>
                         </div>
                       </div>
@@ -124,12 +124,12 @@ export function DemoShowcase() {
                   {/* barra de carrinho flutuante */}
                   <div className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-2xl bg-zinc-900 px-4 py-3 shadow-lg">
                     <div className="flex items-center gap-2 text-sm font-medium text-white">
-                      <span className="flex size-5 items-center justify-center rounded-full bg-orange-500 text-[11px]">
+                      <span className="flex size-5 items-center justify-center rounded-full bg-brand-500 text-[11px]">
                         1
                       </span>
                       R$ 59,90
                     </div>
-                    <span className="text-sm font-semibold text-orange-400">
+                    <span className="text-sm font-semibold text-brand-300">
                       Ver carrinho
                     </span>
                   </div>
@@ -189,7 +189,7 @@ export function DemoShowcase() {
 
                   {/* toast simulando a notificação em tempo real (SSE) */}
                   <motion.div
-                    className="absolute top-3 right-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-3 py-2 shadow-lg"
+                    className="absolute top-3 right-3 flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-3 py-2 shadow-lg"
                     initial={{ opacity: 0, y: -12, scale: 0.95 }}
                     animate={{
                       opacity: [0, 1, 1, 0],
@@ -204,7 +204,7 @@ export function DemoShowcase() {
                       ease: "easeInOut",
                     }}
                   >
-                    <span className="flex size-6 items-center justify-center rounded-full bg-orange-500">
+                    <span className="flex size-6 items-center justify-center rounded-full bg-brand-500">
                       <Bell className="size-3.5 text-white" />
                     </span>
                     <span className="text-xs font-medium text-zinc-800">
@@ -279,12 +279,12 @@ function ConnectorPulse() {
           do celular para o painel sem depender de motion-path (suporte
           irregular entre navegadores) */}
       <motion.span
-        className="absolute top-2 left-2.5 size-2 rounded-full bg-orange-400 shadow-[0_0_10px_2px_rgba(251,146,60,0.7)]"
+        className="absolute top-2 left-2.5 size-2 rounded-full bg-brand-400 shadow-[0_0_10px_2px_rgba(251,146,60,0.7)]"
         animate={{ opacity: [1, 0.2, 1], scale: [1, 0.8, 1] }}
         transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.span
-        className="absolute bottom-2 right-2 size-2 rounded-full bg-orange-400 shadow-[0_0_10px_2px_rgba(251,146,60,0.7)]"
+        className="absolute bottom-2 right-2 size-2 rounded-full bg-brand-400 shadow-[0_0_10px_2px_rgba(251,146,60,0.7)]"
         animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1, 0.8] }}
         transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
       />

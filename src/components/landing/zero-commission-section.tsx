@@ -40,18 +40,18 @@ export function ZeroCommissionSection() {
   return (
     <section className="relative overflow-hidden bg-background py-24 sm:py-32">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/3 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-emerald-600/10 blur-[130px]" />
+        <div className="light-spot absolute inset-0" />
       </div>
 
       <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
         <Reveal>
           <div className="flex flex-col items-center gap-3 text-center">
-            <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-300 uppercase ring-1 ring-emerald-500/20">
+            <span className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-brand-300 uppercase ring-1 ring-brand-500/25">
               Delivery próprio
             </span>
             <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               Venda direto pelo WhatsApp e pague{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-300 to-brand-200 bg-clip-text text-transparent">
                 0% de comissão
               </span>
             </h2>
@@ -89,8 +89,8 @@ export function ZeroCommissionSection() {
                 key={channel.title}
                 className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
               >
-                <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/15 ring-1 ring-emerald-500/25">
-                  <channel.icon className="size-4 text-emerald-300" />
+                <span className="flex size-9 items-center justify-center rounded-xl bg-brand-500/15 ring-1 ring-brand-500/30">
+                  <channel.icon className="size-4 text-brand-300" />
                 </span>
                 <p className="font-medium text-white">{channel.title}</p>
                 <p className="text-sm leading-relaxed text-zinc-400">{channel.body}</p>
@@ -134,7 +134,7 @@ export function ZeroCommissionSection() {
                     step={500}
                     value={monthlyRevenue}
                     onChange={(e) => setMonthlyRevenue(Number(e.target.value))}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-emerald-400"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-brand-400"
                   />
                 </div>
 
@@ -158,13 +158,13 @@ export function ZeroCommissionSection() {
                     step={1}
                     value={feePercent}
                     onChange={(e) => setFeePercent(Number(e.target.value))}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-emerald-400"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-brand-400"
                   />
                 </div>
               </div>
 
               {/* Resultado */}
-              <div className="flex flex-1 flex-col gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] p-6">
+              <div className="flex flex-1 flex-col gap-4 rounded-2xl border border-brand-500/25 bg-brand-500/[0.06] p-6">
                 <div>
                   <p className="text-sm text-zinc-400">
                     Você deixa de faturar em comissão, por mês
@@ -189,13 +189,13 @@ export function ZeroCommissionSection() {
                   </p>
                 </div>
 
-                <div className="flex items-start gap-2.5 rounded-xl bg-emerald-500/10 p-3.5 ring-1 ring-emerald-500/20">
-                  <PiggyBank className="mt-0.5 size-4 shrink-0 text-emerald-300" />
-                  <p className="text-sm text-emerald-100">
+                <div className="flex items-start gap-2.5 rounded-xl bg-brand-500/10 p-3.5 ring-1 ring-brand-500/25">
+                  <PiggyBank className="mt-0.5 size-4 shrink-0 text-brand-300" />
+                  <p className="text-sm text-brand-100">
                     Sobram{" "}
                     <span
                       data-slot="calc-saved-year"
-                      className="font-semibold text-emerald-200"
+                      className="font-semibold text-brand-200"
                     >
                       {formatCents(savedPerYearCents)}
                     </span>{" "}

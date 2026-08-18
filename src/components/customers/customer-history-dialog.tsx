@@ -66,7 +66,7 @@ export function CustomerHistoryDialog({
                     <span className="text-muted-foreground"> · Mesa {order.tableNumber}</span>
                   )}
                 </p>
-                <span className="text-sm font-medium text-orange-300">
+                <span className="text-sm font-medium text-brand-300">
                   {formatCents(order.totalCents)}
                 </span>
               </div>

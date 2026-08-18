@@ -101,7 +101,7 @@ export default async function OrdersPage() {
         <OrderColumn
           title="Em preparo"
           count={preparing.length}
-          dotClassName="bg-orange-400 animate-pulse"
+          dotClassName="bg-brand-400 animate-pulse"
           orders={preparing}
           emptyLabel="Nada em preparo agora."
           canCopyOrder={canCopyOrder}

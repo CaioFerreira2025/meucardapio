@@ -159,7 +159,7 @@ export function ReviewModal({
                     className={cn(
                       "size-8 transition-colors",
                       value <= displayRating
-                        ? "fill-orange-400 text-orange-400"
+                        ? "fill-amber-400 text-amber-400"
                         : "fill-transparent text-zinc-600"
                     )}
                     strokeWidth={1.5}
@@ -235,7 +235,7 @@ export function ReviewModal({
 
         <DialogFooter className="p-4 pt-3">
           <Button
-            className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+            className="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
             disabled={isSubmitting}
             onClick={handleSubmit}
           >

@@ -71,8 +71,8 @@ export default async function ModulePage({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-white">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/25">
-              <definition.icon className="size-4 text-orange-300" />
+            <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/25">
+              <definition.icon className="size-4 text-brand-300" />
             </span>
             {definition.name}
             <PageHelp page="module" />

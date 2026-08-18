@@ -31,13 +31,13 @@ export function FloatingChip({
   const toneMap: Record<string, string> = {
     neutral: "text-zinc-200",
     success: "text-emerald-300",
-    accent: "text-orange-300",
+    accent: "text-brand-300",
   };
 
   const dotMap: Record<string, string> = {
     neutral: "bg-zinc-400",
     success: "bg-emerald-400",
-    accent: "bg-orange-400",
+    accent: "bg-brand-400",
   };
 
   return (

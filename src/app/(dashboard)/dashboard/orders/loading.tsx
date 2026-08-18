@@ -9,7 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 // consulta, rota ou lógica de negócio é alterada.
 const COLUMNS = [
   { title: "Recebidos", dotClassName: "bg-zinc-400", cards: 1 },
-  { title: "Em preparo", dotClassName: "bg-orange-400/60", cards: 1 },
+  { title: "Em preparo", dotClassName: "bg-brand-400/60", cards: 1 },
   { title: "Prontos", dotClassName: "bg-emerald-400/60", cards: 0 },
   { title: "Entregues", dotClassName: "bg-zinc-600", cards: 1 },
 ];

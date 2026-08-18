@@ -181,7 +181,7 @@ export function ActiveOrderPanel({ slug }: { slug: string }) {
         onClick={() => setCollapsed(false)}
         className="fixed top-4 left-4 z-40 flex items-center gap-2 rounded-full bg-popover/95 px-4 py-2.5 text-sm font-medium text-white shadow-xl ring-1 ring-white/10 backdrop-blur-xl transition-transform active:scale-95"
       >
-        <span className="size-2 shrink-0 animate-pulse rounded-full bg-orange-400" />
+        <span className="size-2 shrink-0 animate-pulse rounded-full bg-brand-400" />
         Pedido: {statusLabel}
         <ChevronDown className="size-3.5" />
       </button>
@@ -222,7 +222,7 @@ export function ActiveOrderPanel({ slug }: { slug: string }) {
                   className={cn(
                     "flex size-6 shrink-0 items-center justify-center rounded-full ring-1 transition-colors",
                     isDone
-                      ? "bg-gradient-to-br from-orange-500 to-rose-500 text-white ring-orange-500/30"
+                      ? "bg-gradient-to-br from-brand-600 to-brand-500 text-white ring-brand-500/30"
                       : "bg-white/5 text-muted-foreground ring-white/10"
                   )}
                 >
@@ -236,7 +236,7 @@ export function ActiveOrderPanel({ slug }: { slug: string }) {
                   <div
                     className={cn(
                       "mx-1 h-0.5 flex-1 rounded-full transition-colors",
-                      index < currentStepIndex ? "bg-orange-500" : "bg-white/10"
+                      index < currentStepIndex ? "bg-brand-500" : "bg-white/10"
                     )}
                   />
                 )}
@@ -265,7 +265,7 @@ export function ActiveOrderPanel({ slug }: { slug: string }) {
             <Button
               size="sm"
               disabled={activeOrder.billRequested || isRequestingBill}
-              className="w-full gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+              className="w-full gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
               onClick={handleRequestBill}
             >
               <Receipt className="size-4" />

@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 //    deixa a barra dele translúcida mostrando o conteúdo da página por
 //    trás, o que dava a impressão de que a barra de navegação do cardápio
 //    estava "transparente" / com um vão vazando conteúdo embaixo dela.
-//    `#0a0a0a` é o mesmo `--background` do tema escuro (globals.css) —
+//    `#0a0c0b` é o mesmo `--background` do tema escuro (globals.css) —
 //    todas as telas do app (landing, painel e cardápio público) são
 //    escuras, então vale uma cor só.
 export const viewport: Viewport = {
@@ -53,7 +53,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
-  themeColor: "#0a0a0a",
+  themeColor: "#0a0c0b",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -26,7 +26,7 @@ function StarRow({ rating, size = "size-4" }: { rating: number; size?: string })
           key={value}
           className={cn(
             size,
-            value <= rating ? "fill-orange-400 text-orange-400" : "fill-transparent text-zinc-600"
+            value <= rating ? "fill-amber-400 text-amber-400" : "fill-transparent text-zinc-600"
           )}
           strokeWidth={1.5}
         />
@@ -102,11 +102,11 @@ export default async function ReviewsPage() {
             {distribution.map(({ rating, count, percent }) => (
               <div key={rating} className="flex items-center gap-3 text-sm">
                 <span className="flex w-10 shrink-0 items-center gap-1 text-muted-foreground">
-                  {rating} <Star className="size-3.5 fill-orange-400 text-orange-400" />
+                  {rating} <Star className="size-3.5 fill-amber-400 text-amber-400" />
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/5">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500"
+                    className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-500"
                     style={{ width: `${percent}%` }}
                   />
                 </div>

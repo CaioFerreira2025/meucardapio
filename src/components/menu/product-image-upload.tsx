@@ -71,7 +71,7 @@ export function ProductImageUpload({
         {preview ? (
           <Image src={preview} alt="" fill className="object-cover" unoptimized />
         ) : (
-          <ImagePlus className="size-6 text-orange-300/50" />
+          <ImagePlus className="size-6 text-brand-300/50" />
         )}
         {isUploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/70">

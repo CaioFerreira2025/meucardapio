@@ -146,7 +146,7 @@ export function ComandaClient({ categories }: { categories: Category[] }) {
             className={cn(
               "shrink-0 rounded-full px-4 py-1.5 text-sm font-medium ring-1 transition-colors",
               category.id === activeCategory?.id
-                ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white ring-orange-500/30"
+                ? "bg-gradient-to-r from-brand-600 to-brand-500 text-white ring-brand-500/30"
                 : "bg-white/[0.03] text-muted-foreground ring-white/10 hover:text-white"
             )}
           >
@@ -169,7 +169,7 @@ export function ComandaClient({ categories }: { categories: Category[] }) {
                 <p className="truncate text-sm font-medium text-white">
                   {product.name}
                 </p>
-                <p className="text-xs text-orange-300">
+                <p className="text-xs text-brand-300">
                   {formatCents(product.priceCents)}
                 </p>
               </div>
@@ -191,7 +191,7 @@ export function ComandaClient({ categories }: { categories: Category[] }) {
                 )}
                 <Button
                   size="icon-sm"
-                  className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+                  className="rounded-full bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
                   onClick={() => changeQuantity(product, 1)}
                 >
                   <Plus />
@@ -208,11 +208,11 @@ export function ComandaClient({ categories }: { categories: Category[] }) {
             render={
               <button
                 type="button"
-                className="fixed bottom-20 right-4 z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-orange-950/40 ring-1 ring-white/10 transition-transform active:scale-95 md:bottom-8 md:right-8"
+                className="fixed bottom-20 right-4 z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-brand-900/40 ring-1 ring-white/10 transition-transform active:scale-95 md:bottom-8 md:right-8"
               >
                 <span className="relative flex items-center">
                   <ShoppingCart className="size-5" />
-                  <span className="absolute -top-2.5 -right-2.5 flex size-4.5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-orange-600">
+                  <span className="absolute -top-2.5 -right-2.5 flex size-4.5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-brand-500">
                     {totalItems}
                   </span>
                 </span>
@@ -286,12 +286,12 @@ export function ComandaClient({ categories }: { categories: Category[] }) {
             <SheetFooter>
               <div className="flex items-center justify-between text-sm font-medium">
                 <span className="text-muted-foreground">Total</span>
-                <span className="text-lg font-semibold text-orange-300">
+                <span className="text-lg font-semibold text-brand-300">
                   {formatCents(totalCents)}
                 </span>
               </div>
               <Button
-                className="w-full gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+                className="w-full gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
                 disabled={isSubmitting}
                 onClick={handleSubmit}
               >

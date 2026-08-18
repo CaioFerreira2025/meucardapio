@@ -38,7 +38,7 @@ export function PageHelp({ page }: { page: PageHelpKey }) {
             size="icon-sm"
             aria-label={`Como funciona a aba ${help.title}?`}
             title="Como funciona esta tela?"
-            className="text-muted-foreground hover:text-orange-300"
+            className="text-muted-foreground hover:text-brand-300"
           >
             <HelpCircle />
           </Button>
@@ -47,8 +47,8 @@ export function PageHelp({ page }: { page: PageHelpKey }) {
       <DialogContent className="flex max-h-[85dvh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
         <DialogHeader className="gap-1 p-5 pb-4">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/25">
-              <HelpCircle className="size-4 text-orange-300" />
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/25">
+              <HelpCircle className="size-4 text-brand-300" />
             </span>
             <DialogTitle className="text-white">{help.title}</DialogTitle>
           </div>
@@ -61,7 +61,7 @@ export function PageHelp({ page }: { page: PageHelpKey }) {
               key={step.title}
               className="flex gap-3 rounded-xl bg-white/[0.03] p-3.5 ring-1 ring-white/5"
             >
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-rose-500 text-[11px] font-bold text-white">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-500 text-[11px] font-bold text-white">
                 {index + 1}
               </span>
               <div className="min-w-0">

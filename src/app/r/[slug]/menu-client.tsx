@@ -551,13 +551,13 @@ export function MenuClient({
                   )}
                 </CardHeader>
                 <CardContent className="flex items-center justify-between pt-2 pb-4">
-                  <span className="text-base font-semibold text-orange-300">
+                  <span className="text-base font-semibold text-brand-300">
                     {formatCents(product.priceCents)}
                   </span>
                   <Button
                     size="sm"
                     disabled={!isOpen}
-                    className="gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+                    className="gap-1.5 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-md shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
                     onClick={() => addToCart(product)}
                   >
                     <Plus className="size-4" />
@@ -586,11 +586,11 @@ export function MenuClient({
                 // padding do conteúdo acima. A partir de `md` o menu
                 // inferior já some (`md:hidden` abaixo), então volta a
                 // ficar mais perto da borda.
-                className="fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-orange-950/40 ring-1 ring-white/10 transition-transform active:scale-95 md:right-8 md:bottom-8"
+                className="fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 flex items-center gap-3 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 py-3 pl-4 pr-5 text-white shadow-xl shadow-brand-900/40 ring-1 ring-white/10 transition-transform active:scale-95 md:right-8 md:bottom-8"
               >
                 <span className="relative flex items-center">
                   <ShoppingCart className="size-5" />
-                  <span className="absolute -top-2.5 -right-2.5 flex size-4.5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-orange-600">
+                  <span className="absolute -top-2.5 -right-2.5 flex size-4.5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-brand-500">
                     {totalItems}
                   </span>
                 </span>
@@ -692,7 +692,7 @@ export function MenuClient({
               {suggestions.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="flex items-center gap-1.5 text-sm font-medium text-white">
-                    <Sparkles className="size-3.5 text-orange-300" />
+                    <Sparkles className="size-3.5 text-brand-300" />
                     Que tal completar seu pedido?
                   </p>
                   <div className="flex flex-col gap-1.5">
@@ -703,7 +703,7 @@ export function MenuClient({
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm text-white">{suggestion.name}</p>
-                          <p className="text-xs text-orange-300">
+                          <p className="text-xs text-brand-300">
                             {formatCents(suggestion.priceCents)}
                           </p>
                         </div>
@@ -814,11 +814,11 @@ export function MenuClient({
                           pediu de casa: obrigar todo mundo a escolher um
                           bairro cobraria frete de quem está sentado no
                           salão. Só quem escolhe um bairro paga a taxa. */}
-                      <option value="" className="bg-[#121212]">
+                      <option value="" className="bg-[#101312]">
                         Vou consumir no local / retirar
                       </option>
                       {deliveryZones.map((zone) => (
-                        <option key={zone.id} value={zone.id} className="bg-[#121212]">
+                        <option key={zone.id} value={zone.id} className="bg-[#101312]">
                           {zone.neighborhood}
                           {zone.feeCents > 0
                             ? ` — ${formatCents(zone.feeCents)}`
@@ -946,7 +946,7 @@ export function MenuClient({
                 baixo enquanto a lista rola. */}
             <div className="sticky bottom-0 mt-auto shrink-0 border-t border-border bg-popover p-4">
               <Button
-                className="h-12 w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+                className="h-12 w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-800/20 hover:from-brand-400 hover:to-brand-300"
                 disabled={isSubmitting || !isOpen}
                 onClick={handleCheckout}
               >
@@ -987,17 +987,17 @@ export function MenuClient({
           src/app/layout.tsx — sem aquilo, ele resolve 0px e essa linha vira
           letra morta.
 
-          Fundo `bg-[#121212]` SÓLIDO (antes era `bg-popover/95` +
+          Fundo `bg-[#101312]` SÓLIDO (antes era `bg-popover/95` +
           `backdrop-blur-xl`): translúcido deixava o conteúdo do cardápio
           aparecer por trás da barra ao rolar, o que lia como acabamento
           inacabado ao lado de apps do setor, que usam barra opaca. O blur
           saiu junto porque não tem mais o que borrar — e ainda economiza
           composição de camada no celular. */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/10 bg-[#121212] pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.35)] md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/10 bg-[#101312] pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.35)] md:hidden">
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-orange-400"
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-brand-300"
         >
           <UtensilsCrossed className="size-5" strokeWidth={2.5} />
           Cardápio
@@ -1166,7 +1166,7 @@ export function MenuClient({
               }}
               className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm font-medium text-white transition-colors hover:bg-white/5"
             >
-              <Star className="size-4 text-orange-300" />
+              <Star className="size-4 text-brand-300" />
               Avaliar experiência
             </button>
             {restaurantPhone && (

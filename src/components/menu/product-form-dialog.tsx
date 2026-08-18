@@ -264,7 +264,7 @@ export function ProductFormDialog({
           {complementOptions.length > 0 && (
             <div className="flex flex-col gap-1.5">
               <Label className="flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-orange-300" />
+                <Sparkles className="size-3.5 text-brand-300" />
                 Venda mais — sugerir junto com este produto
               </Label>
               <p className="text-xs text-muted-foreground">
@@ -282,7 +282,7 @@ export function ProductFormDialog({
                       className={cn(
                         "rounded-full px-2.5 py-1 text-xs font-medium ring-1 transition-colors",
                         selected
-                          ? "bg-gradient-to-r from-orange-500/25 to-rose-500/20 text-orange-200 ring-orange-500/40"
+                          ? "bg-gradient-to-r from-brand-600/25 to-brand-500/20 text-brand-200 ring-brand-500/40"
                           : "bg-white/5 text-zinc-400 ring-white/10 hover:bg-white/10 hover:text-white"
                       )}
                     >

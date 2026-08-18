@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export function FloatingIcon({
   icon: Icon,
   className,
-  color = "orange",
+  color = "brand",
   duration = 4,
   delay = 0,
   rotate = 0,
@@ -20,16 +20,16 @@ export function FloatingIcon({
 }: {
   icon: LucideIcon;
   className?: string;
-  color?: "orange" | "amber" | "rose" | "emerald";
+  color?: "brand" | "amber" | "rose" | "emerald";
   duration?: number;
   delay?: number;
   rotate?: number;
   size?: string;
 }) {
   const colorMap: Record<string, string> = {
-    orange: "from-orange-400/90 to-orange-600/90 shadow-orange-500/40",
+    brand: "from-brand-400/90 to-brand-600/90 shadow-brand-700/50",
     amber: "from-amber-300/90 to-amber-500/90 shadow-amber-400/40",
-    rose: "from-rose-400/90 to-rose-600/90 shadow-rose-500/40",
+    rose: "from-brand-300/90 to-brand-600/90 shadow-rose-500/40",
     emerald: "from-emerald-400/90 to-emerald-600/90 shadow-emerald-500/40",
   };
 

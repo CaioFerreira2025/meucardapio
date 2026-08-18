@@ -43,7 +43,7 @@ export function DeliveryZonesForm() {
       <Button
         type="submit"
         disabled={isPending}
-        className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+        className="gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
       >
         <Plus className="size-4" />
         {isPending ? "Salvando..." : "Adicionar"}

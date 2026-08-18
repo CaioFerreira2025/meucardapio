@@ -25,13 +25,13 @@ export default async function PricingPage() {
 
       <main className="relative flex-1 pt-28 pb-24 sm:pt-36 sm:pb-32">
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute top-[-10%] left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-orange-600/15 blur-[120px]" />
+          <div className="absolute top-[-10%] left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-brand-600/15 blur-[120px]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgb(10,10,10)_75%)]" />
         </div>
 
         <div className="relative mx-auto w-full max-w-4xl px-4 sm:px-6">
           <div className="mx-auto mb-14 flex max-w-2xl flex-col items-center gap-3 text-center">
-            <span className="text-sm font-semibold tracking-wide text-orange-400 uppercase">
+            <span className="text-sm font-semibold tracking-wide text-brand-300 uppercase">
               Planos
             </span>
             <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">

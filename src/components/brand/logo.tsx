@@ -34,8 +34,14 @@ export function LogoMark({ className }: { className?: string }) {
           y2="32"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#f97316" />
-          <stop offset="1" stopColor="#f43f5e" />
+          {/* Verde esmeralda da marca — mesmos valores de `brand-500` e
+              `brand-700` em globals.css. Aqui a cor é literal, e não
+              `var(--color-brand-*)`, de propósito: este SVG também é usado
+              como favicon (src/app/icon.svg), e favicon é renderizado fora
+              do documento, onde variáveis CSS não existem. Se mudar a
+              escala da marca, mude estes dois valores junto. */}
+          <stop stopColor="#1a7f52" />
+          <stop offset="1" stopColor="#0f5132" />
         </linearGradient>
       </defs>
     </svg>

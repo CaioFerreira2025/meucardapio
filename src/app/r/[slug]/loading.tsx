@@ -24,13 +24,13 @@ export default function PublicMenuLoading() {
         aria-hidden
         className="pointer-events-none fixed inset-0 overflow-hidden"
       >
-        <div className="absolute top-[-15%] left-1/4 h-[28rem] w-[28rem] rounded-full bg-orange-600/10 blur-[130px]" />
+        <div className="absolute top-[-15%] left-1/4 h-[28rem] w-[28rem] rounded-full bg-brand-600/10 blur-[130px]" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 
       <div className="relative mx-auto flex w-full max-w-3xl flex-col gap-10 px-4 pb-28 sm:px-6">
         <header className="flex flex-col items-center gap-3 pt-10 pb-6 text-center sm:pt-14">
-          <span className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-rose-500 shadow-xl shadow-orange-600/30 ring-1 ring-white/10">
+          <span className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-xl shadow-brand-800/30 ring-1 ring-white/10">
             <UtensilsCrossed className="size-7 text-white" strokeWidth={2} />
           </span>
           <Skeleton className="h-7 w-48" />

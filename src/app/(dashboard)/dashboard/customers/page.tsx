@@ -142,7 +142,7 @@ export default async function CustomersPage() {
                       <p className="text-xs text-muted-foreground">{customer.phone}</p>
                     </TableCell>
                     <TableCell className="text-zinc-300">{customer.orderCount}</TableCell>
-                    <TableCell className="font-medium text-orange-300">
+                    <TableCell className="font-medium text-brand-300">
                       {formatCents(customer.totalSpentCents)}
                     </TableCell>
                     <TableCell className="text-zinc-300">

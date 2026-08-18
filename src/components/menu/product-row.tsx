@@ -86,7 +86,7 @@ export function ProductRow({
             </p>
           )}
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-orange-300">
+            <p className="text-sm font-medium text-brand-300">
               {formatCents(product.priceCents)}
             </p>
             {typeof product.costCents === "number" && product.costCents > 0 && (

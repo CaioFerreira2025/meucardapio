@@ -25,8 +25,8 @@ export function PaywallScreen({ state }: { state: AccessState }) {
   return (
     <div className="flex flex-col items-center gap-8 py-8">
       <div className="flex max-w-xl flex-col items-center gap-3 text-center">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/25">
-          <Lock className="size-5 text-orange-300" />
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-400/20 to-brand-500/20 ring-1 ring-brand-500/25">
+          <Lock className="size-5 text-brand-300" />
         </span>
         <h1 className="text-2xl font-semibold tracking-tight text-white">
           {headline}
@@ -44,12 +44,12 @@ export function PaywallScreen({ state }: { state: AccessState }) {
             key={plan.id}
             className={
               plan.highlighted
-                ? "relative flex flex-col gap-4 rounded-2xl border border-orange-500/40 bg-gradient-to-b from-orange-500/[0.08] to-white/[0.02] p-6"
+                ? "relative flex flex-col gap-4 rounded-2xl border border-brand-500/40 bg-gradient-to-b from-brand-600/[0.08] to-white/[0.02] p-6"
                 : "relative flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6"
             }
           >
             {plan.highlighted && (
-              <span className="absolute top-5 right-5 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase">
+              <span className="absolute top-5 right-5 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase">
                 Mais escolhido
               </span>
             )}
@@ -76,7 +76,7 @@ export function PaywallScreen({ state }: { state: AccessState }) {
       <div className="flex flex-col items-center gap-2">
         <Button
           size="lg"
-          className="bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+          className="bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
           render={<Link href="/pricing">Escolher meu plano</Link>}
         />
         <Button

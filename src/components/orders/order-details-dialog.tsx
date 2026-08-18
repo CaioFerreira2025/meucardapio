@@ -121,7 +121,7 @@ export function OrderDetailsDialog({
 
           <div className="mt-1 flex justify-between border-t border-border pt-2 text-sm font-medium">
             <span>Total</span>
-            <span className="text-orange-300">{formatCents(order.totalCents)}</span>
+            <span className="text-brand-300">{formatCents(order.totalCents)}</span>
           </div>
         </section>
 

@@ -107,7 +107,7 @@ function TableRow({ table }: { table: TableBillRequest }) {
           <p className="text-xs text-muted-foreground">
             {table.orders.length}{" "}
             {table.orders.length === 1 ? "pedido" : "pedidos"} ·{" "}
-            <span className="text-orange-300">{formatCents(table.totalCents)}</span>
+            <span className="text-brand-300">{formatCents(table.totalCents)}</span>
           </p>
         </div>
         <DialogTrigger
@@ -142,7 +142,7 @@ function TableRow({ table }: { table: TableBillRequest }) {
             ))}
             <div className="mt-1 flex justify-between border-t border-border pt-2 text-sm font-medium">
               <span>Total da mesa</span>
-              <span className="text-orange-300">{formatCents(table.totalCents)}</span>
+              <span className="text-brand-300">{formatCents(table.totalCents)}</span>
             </div>
           </div>
 
@@ -157,7 +157,7 @@ function TableRow({ table }: { table: TableBillRequest }) {
                   variant={paymentMethod === method ? "default" : "outline"}
                   className={
                     paymentMethod === method
-                      ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:from-orange-400 hover:to-rose-400"
+                      ? "bg-gradient-to-r from-brand-600 to-brand-500 text-white hover:from-brand-400 hover:to-brand-300"
                       : undefined
                   }
                   onClick={() => setPaymentMethod(method)}

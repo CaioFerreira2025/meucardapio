@@ -25,22 +25,41 @@ const TRUST_ITEMS = [
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-background pt-28 pb-32 sm:pt-36 sm:pb-44">
-      {/* fundo: brilhos radiais em degradê, dão profundidade sem pesar */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute top-[-10%] left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-orange-600/20 blur-[120px]" />
-        <div className="absolute top-1/3 right-[8%] h-72 w-72 rounded-full bg-rose-600/15 blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[10%] h-80 w-80 rounded-full bg-amber-500/15 blur-[110px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgb(10,10,10)_75%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_20%,black,transparent)]" />
-      </div>
+    <section className="texture-grain relative overflow-hidden bg-background pt-28 pb-32 sm:pt-36 sm:pb-44">
+      {/* FUNDO — iluminação de estúdio, não manchas de cor nem formas com
+          borda perceptível.
 
-      {/* marca d'água: símbolo gigante e quase invisível atrás do headline —
-          reforça a marca sem competir com o texto (que precisa continuar
-          sendo o que explica o produto). */}
+          Duas tentativas anteriores erraram do mesmo jeito: qualquer camada
+          com um limite definido — um círculo com blur, ou (como aqui até a
+          versão anterior) uma malha de linhas recortada por
+          `mask-image: radial-gradient(...)` — em telas de celular curtas
+          fica "espremida" perto do headline, e o olho enxerga o contorno da
+          máscara como um retângulo/quadrado atrás do texto, mesmo a cor de
+          dentro sendo bem sutil. No computador, com mais altura de sobra ao
+          redor, o mesmo contorno fica longe o bastante do texto pra passar
+          despercebido — por isso o problema só aparecia no celular.
+
+          A correção: nenhuma camada de fundo aqui tem borda lateral ou
+          inferior. `.light-spot` agora é um facho vertical (topo →
+          transparente) que cobre 100% da largura — sem elipse, sem máscara,
+          então não existe contorno nenhum pra virar "quadrado", em
+          qualquer altura de tela. A vinheta fecha só as bordas externas da
+          seção, longe do headline. Grão de filme por cima quebra o
+          degradê. */}
+      <div aria-hidden className="light-spot pointer-events-none absolute inset-0" />
+      <div aria-hidden className="vignette pointer-events-none absolute inset-0" />
+
+      {/* Marca d'água: símbolo gigante e quase invisível atrás do headline.
+          `hidden lg:block` — no celular ela ATRAPALHAVA em vez de decorar.
+          O símbolo é um anel e um ponto; a 38rem numa tela de 390px, o anel
+          fica maior que a largura do aparelho e o que sobra atrás do texto
+          são dois arcos cinzentos cortados, que ninguém reconhece como
+          logo — leem como manchas circulares fora de lugar. Marca d'água só
+          funciona quando cabe inteira e é reconhecível, o que a partir de
+          `lg` acontece. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.05]"
+        className="pointer-events-none absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 opacity-[0.04] lg:block"
       >
         <LogoMark className="size-[38rem]" />
       </div>
@@ -51,7 +70,7 @@ export function HeroSection() {
       <div className="pointer-events-none absolute inset-0 hidden lg:block">
         <FloatingIcon
           icon={QrCode}
-          color="amber"
+          color="brand"
           className="top-[16%] left-[11%]"
           duration={4.5}
           rotate={-8}
@@ -112,9 +131,9 @@ export function HeroSection() {
           initial={{ y: -10 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-medium text-orange-200 backdrop-blur-md"
+          className="inline-flex items-center gap-2 rounded-full border border-brand-300/25 bg-brand-500/10 px-4 py-1.5 text-[11px] font-medium tracking-[0.14em] text-brand-200 uppercase backdrop-blur-md"
         >
-          <Sparkles className="size-3.5 text-orange-300" />
+          <Sparkles className="size-3.5 text-brand-300" />
           Feito para restaurantes, lanchonetes e hamburguerias
         </motion.div>
 
@@ -125,7 +144,7 @@ export function HeroSection() {
           className="text-4xl leading-[1.08] font-semibold tracking-tight text-white sm:text-6xl"
         >
           Aumente suas vendas com o{" "}
-          <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-brand-300 via-brand-200 to-brand-400 bg-clip-text text-transparent">
             cardápio digital
           </span>{" "}
           mais rápido e moderno
@@ -152,7 +171,7 @@ export function HeroSection() {
         >
           <Button
             size="lg"
-            className="h-12 gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-6 text-base font-semibold text-white shadow-lg shadow-orange-600/30 hover:from-orange-400 hover:to-rose-400 hover:shadow-orange-500/40"
+            className="h-12 gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 text-base font-semibold text-white shadow-lg shadow-brand-900/50 ring-1 ring-brand-300/20 hover:from-brand-500 hover:to-brand-400 hover:shadow-brand-700/50"
             render={
               <Link href="/register">
                 Criar Conta Grátis
@@ -180,7 +199,7 @@ export function HeroSection() {
         >
           {TRUST_ITEMS.map((item) => (
             <li key={item} className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-orange-500" />
+              <span className="size-1.5 rounded-full bg-brand-400" />
               {item}
             </li>
           ))}
