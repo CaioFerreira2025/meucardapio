@@ -34,12 +34,14 @@ export function OrderColumn({
   dotClassName,
   orders,
   emptyLabel,
+  canCopyOrder = false,
 }: {
   title: string;
   count: number;
   dotClassName: string;
   orders: Order[];
   emptyLabel: string;
+  canCopyOrder?: boolean;
 }) {
   return (
     <section className="flex min-w-0 flex-col gap-3">
@@ -72,7 +74,9 @@ export function OrderColumn({
             {emptyLabel}
           </p>
         ) : (
-          orders.map((order) => <OrderCard key={order.id} order={order} />)
+          orders.map((order) => (
+            <OrderCard key={order.id} order={order} canCopyOrder={canCopyOrder} />
+          ))
         )}
       </div>
     </section>

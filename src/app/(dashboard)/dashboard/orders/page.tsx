@@ -12,6 +12,7 @@ import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
 import { PageHelp } from "@/components/dashboard/page-help";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { isModuleEnabled } from "@/lib/modules";
 import { ClipboardList } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -28,7 +29,12 @@ export default async function OrdersPage() {
     return <PaywallScreen state={access} />;
   }
 
+
   const restaurant = await getEffectiveRestaurant();
+
+  // Módulo "copiar-pedido": resolvido no SERVIDOR. Quem não tem o módulo
+  // recebe `false` e o botão nem chega a ser renderizado nos cards.
+  const canCopyOrder = await isModuleEnabled(restaurant!.id, "copiar-pedido");
 
   const tablesAwaitingBill = await getTablesAwaitingBill(restaurant!.id);
 
@@ -67,7 +73,7 @@ export default async function OrdersPage() {
         </p>
       </div>
 
-      <ArchivedOrdersSection orders={archivedOrders} />
+      <ArchivedOrdersSection orders={archivedOrders} canCopyOrder={canCopyOrder} />
 
       <BillRequestsAlert tables={tablesAwaitingBill} />
 
@@ -90,6 +96,7 @@ export default async function OrdersPage() {
           dotClassName="bg-zinc-400"
           orders={received}
           emptyLabel="Nenhum pedido novo."
+          canCopyOrder={canCopyOrder}
         />
         <OrderColumn
           title="Em preparo"
@@ -97,6 +104,7 @@ export default async function OrdersPage() {
           dotClassName="bg-orange-400 animate-pulse"
           orders={preparing}
           emptyLabel="Nada em preparo agora."
+          canCopyOrder={canCopyOrder}
         />
         <OrderColumn
           title="Prontos"
@@ -104,6 +112,7 @@ export default async function OrdersPage() {
           dotClassName="bg-emerald-400 animate-pulse"
           orders={ready}
           emptyLabel="Nenhum pedido pronto."
+          canCopyOrder={canCopyOrder}
         />
         <OrderColumn
           title="Entregues"
@@ -111,6 +120,7 @@ export default async function OrdersPage() {
           dotClassName="bg-zinc-600"
           orders={delivered}
           emptyLabel="Nenhuma entrega ainda."
+          canCopyOrder={canCopyOrder}
         />
       </div>
       )}
@@ -126,7 +136,7 @@ export default async function OrdersPage() {
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {cancelled.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} canCopyOrder={canCopyOrder} />
             ))}
           </div>
         </section>

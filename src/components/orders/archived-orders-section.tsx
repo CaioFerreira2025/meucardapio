@@ -36,7 +36,13 @@ type Order = {
 // e, se precisar, restaurar pro quadro ativo (o card continua com todos os
 // botões normais de status, então dá pra avançar/cancelar um pedido ativo
 // mesmo estando arquivado).
-export function ArchivedOrdersSection({ orders }: { orders: Order[] }) {
+export function ArchivedOrdersSection({
+  orders,
+  canCopyOrder = false,
+}: {
+  orders: Order[];
+  canCopyOrder?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -70,7 +76,7 @@ export function ArchivedOrdersSection({ orders }: { orders: Order[] }) {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {orders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard key={order.id} order={order} canCopyOrder={canCopyOrder} />
               ))}
             </div>
           )}

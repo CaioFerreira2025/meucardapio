@@ -43,7 +43,7 @@ import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { readLastOrder, writeLastOrder, type LastOrderInfo } from "@/lib/last-order";
 import { ReviewModal } from "@/components/reviews/review-modal";
 import { ActiveOrderPanel } from "@/components/public-menu/active-order-panel";
-import { createOrder } from "./actions";
+import { createOrder, validateCoupon } from "./actions";
 
 type ComplementProduct = {
   id: string;
@@ -69,18 +69,34 @@ type Category = {
 
 type CartLine = { product: Product; quantity: number };
 
+export type DeliveryZoneOption = {
+  id: string;
+  neighborhood: string;
+  feeCents: number;
+};
+
+// Os três últimos props vêm dos MÓDULOS SOB DEMANDA, resolvidos no servidor
+// (ver src/app/r/[slug]/page.tsx). Quem não tem o módulo recebe lista vazia /
+// `false`, e o bloco correspondente nem chega a ser renderizado — a tela do
+// cliente de um restaurante sem os módulos fica exatamente como era.
 export function MenuClient({
   slug,
   restaurantName,
   restaurantPhone,
   isOpen,
   categories,
+  deliveryZones = [],
+  couponsEnabled = false,
+  closedBySchedule = false,
 }: {
   slug: string;
   restaurantName: string;
   restaurantPhone?: string | null;
   isOpen: boolean;
   categories: Category[];
+  deliveryZones?: DeliveryZoneOption[];
+  couponsEnabled?: boolean;
+  closedBySchedule?: boolean;
 }) {
   const router = useRouter();
   const [cart, setCart] = useState<Record<string, CartLine>>({});
@@ -114,6 +130,23 @@ export function MenuClient({
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [tableError, setTableError] = useState("");
+
+  // ----- Módulo "entregas" (taxa por bairro) -----
+  // Guarda o ID da zona, não o nome: o nome pode ser editado no painel e o
+  // ID é o que amarra a taxa exibida à linha do banco.
+  const [zoneId, setZoneId] = useState("");
+
+  // ----- Módulo "cupons" -----
+  // `couponInput` é o que a pessoa está digitando; `appliedCoupon` só existe
+  // depois que o SERVIDOR confirmou o cupom (ver `validateCoupon`). Nunca se
+  // calcula desconto aqui na tela.
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountCents: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
 
   // Retângulo da área REALMENTE visível da tela (o "visual viewport"),
   // usado para ancorar o modal de checkout enquanto o teclado está aberto.
@@ -203,10 +236,80 @@ export function MenuClient({
 
   const lines = useMemo(() => Object.values(cart), [cart]);
   const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
-  const totalCents = lines.reduce(
+  const subtotalCents = lines.reduce(
     (sum, line) => sum + line.product.priceCents * line.quantity,
     0
   );
+
+  const selectedZone = useMemo(
+    () => deliveryZones.find((zone) => zone.id === zoneId) ?? null,
+    [deliveryZones, zoneId]
+  );
+  const deliveryFeeCents = selectedZone?.feeCents ?? 0;
+  const discountCents = appliedCoupon?.discountCents ?? 0;
+
+  // Mesma conta do servidor (ver `createOrder`): o desconto incide só sobre
+  // os itens, nunca sobre o frete — cupom de 100% não pode zerar a entrega,
+  // que é dinheiro que o restaurante paga ao entregador.
+  const totalCents =
+    Math.max(0, subtotalCents - discountCents) + deliveryFeeCents;
+
+  // Um cupom percentual muda de valor quando o carrinho muda. Em vez de
+  // recalcular aqui (o que significaria duplicar a regra na tela e abrir
+  // espaço para divergir do servidor), pergunta de novo pro servidor.
+  // Não entra em laço: só depende do subtotal e do CÓDIGO aplicado, e o
+  // código não muda ao reconferir.
+  useEffect(() => {
+    const code = appliedCoupon?.code;
+    if (!code) return;
+
+    let cancelled = false;
+    // Pequeno atraso: clicar "+" três vezes seguidas mexe no subtotal três
+    // vezes, e sem isso viraria uma consulta por clique. Só a última conta.
+    const timer = window.setTimeout(() => {
+      validateCoupon({ slug, code, subtotalCents }).then((result) => {
+        if (cancelled) return;
+        if (result.ok) {
+          setAppliedCoupon({ code: result.code, discountCents: result.discountCents });
+        } else {
+          // Ex.: o carrinho caiu abaixo do pedido mínimo do cupom.
+          setAppliedCoupon(null);
+          setCouponError(result.error);
+        }
+      });
+    }, 400);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [slug, subtotalCents, appliedCoupon?.code]);
+
+  async function handleApplyCoupon() {
+    const code = couponInput.trim();
+    if (!code) {
+      setCouponError("Digite o código do cupom.");
+      return;
+    }
+    setIsCheckingCoupon(true);
+    const result = await validateCoupon({ slug, code, subtotalCents });
+    setIsCheckingCoupon(false);
+
+    if (!result.ok) {
+      setAppliedCoupon(null);
+      setCouponError(result.error);
+      return;
+    }
+    setAppliedCoupon({ code: result.code, discountCents: result.discountCents });
+    setCouponError("");
+    setCouponInput(result.code);
+    toast.success(`Cupom ${result.code} aplicado.`);
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError("");
+  }
 
   // Mapa achatado de todos os produtos disponíveis — usado para resolver um
   // complementar (Venda Mais) num Product completo ao adicionar ao carrinho.
@@ -305,6 +408,10 @@ export function MenuClient({
         productId: line.product.id,
         quantity: line.quantity,
       })),
+      // O servidor NÃO recebe valores — recebe o bairro escolhido e o código
+      // digitado, e busca taxa e desconto no banco por conta própria.
+      neighborhood: selectedZone?.neighborhood,
+      couponCode: appliedCoupon?.code,
     });
     setIsSubmitting(false);
 
@@ -361,9 +468,17 @@ export function MenuClient({
           algo pra mostrar. */}
       <ActiveOrderPanel slug={slug} />
 
+      {/* Fechado. A mensagem muda conforme o MOTIVO: quando é o módulo de
+          horários que fechou a loja (`closedBySchedule`), dizer só "não está
+          aceitando pedidos" faz o cliente achar que o restaurante fechou de
+          vez — quando na verdade é só fora do expediente e ele pode voltar
+          mais tarde. O lojista, esse, não desligou nada e ficaria sem
+          entender por que a loja aparece fechada. */}
       {!isOpen && (
         <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
-          Este restaurante não está aceitando pedidos no momento.
+          {closedBySchedule
+            ? "Estamos fora do horário de funcionamento no momento. Volte dentro do nosso horário de atendimento para fazer seu pedido."
+            : "Este restaurante não está aceitando pedidos no momento."}
         </div>
       )}
 
@@ -680,6 +795,99 @@ export function MenuClient({
                     </p>
                   )}
                 </div>
+                {/* MÓDULO "entregas" — só existe se o restaurante tiver o
+                    módulo ligado e bairros cadastrados. `<select>` nativo de
+                    propósito: no celular ele abre a roleta do próprio
+                    sistema, sem popup em portal disputando espaço com o
+                    teclado dentro do sheet de checkout. */}
+                {deliveryZones.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="delivery-zone">Entrega (opcional)</Label>
+                    <select
+                      id="delivery-zone"
+                      value={zoneId}
+                      onChange={(e) => setZoneId(e.target.value)}
+                      className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm text-white shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    >
+                      {/* OPCIONAL, e a opção padrão é "sem entrega".
+                          O mesmo cardápio atende quem está na mesa e quem
+                          pediu de casa: obrigar todo mundo a escolher um
+                          bairro cobraria frete de quem está sentado no
+                          salão. Só quem escolhe um bairro paga a taxa. */}
+                      <option value="" className="bg-[#121212]">
+                        Vou consumir no local / retirar
+                      </option>
+                      {deliveryZones.map((zone) => (
+                        <option key={zone.id} value={zone.id} className="bg-[#121212]">
+                          {zone.neighborhood}
+                          {zone.feeCents > 0
+                            ? ` — ${formatCents(zone.feeCents)}`
+                            : " — grátis"}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      Escolha o bairro só se o pedido for para entrega — a taxa
+                      entra no total automaticamente.
+                    </p>
+                  </div>
+                )}
+
+                {/* MÓDULO "cupons" */}
+                {couponsEnabled && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="coupon-code">Cupom de desconto (opcional)</Label>
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2">
+                        <span className="min-w-0 truncate text-sm text-emerald-300">
+                          <span className="font-semibold">{appliedCoupon.code}</span>{" "}
+                          — desconto de {formatCents(appliedCoupon.discountCents)}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="shrink-0 text-xs text-zinc-400"
+                          onClick={handleRemoveCoupon}
+                        >
+                          Remover
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          id="coupon-code"
+                          value={couponInput}
+                          onChange={(e) => {
+                            setCouponInput(e.target.value);
+                            if (couponError) setCouponError("");
+                          }}
+                          onFocus={handleFieldFocus}
+                          placeholder="Ex.: PRIMEIRACOMPRA"
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          className="font-mono tracking-wider uppercase"
+                          aria-invalid={couponError ? true : undefined}
+                          aria-describedby={couponError ? "coupon-code-error" : undefined}
+                        />
+                        <Button
+                          variant="outline"
+                          className="shrink-0"
+                          disabled={isCheckingCoupon}
+                          onClick={handleApplyCoupon}
+                        >
+                          {isCheckingCoupon ? "..." : "Aplicar"}
+                        </Button>
+                      </div>
+                    )}
+                    {couponError && (
+                      <p id="coupon-code-error" className="text-xs text-red-400">
+                        {couponError}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="order-notes">Observações (opcional)</Label>
                   <Textarea
@@ -691,6 +899,35 @@ export function MenuClient({
                   />
                 </div>
               </div>
+
+              {/* Extrato do valor — só aparece quando há algo a explicar
+                  (frete ou desconto). Sem módulo nenhum ligado, o rodapé com
+                  "Enviar pedido · R$ X" continua sendo a única menção a
+                  valor, exatamente como antes. */}
+              {(deliveryFeeCents > 0 || discountCents > 0) && (
+                <div className="flex flex-col gap-1 border-t border-border pt-3 text-sm">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Subtotal</span>
+                    <span>{formatCents(subtotalCents)}</span>
+                  </div>
+                  {discountCents > 0 && (
+                    <div className="flex items-center justify-between text-emerald-400">
+                      <span>Desconto{appliedCoupon ? ` (${appliedCoupon.code})` : ""}</span>
+                      <span>-{formatCents(discountCents)}</span>
+                    </div>
+                  )}
+                  {deliveryFeeCents > 0 && (
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>Entrega{selectedZone ? ` — ${selectedZone.neighborhood}` : ""}</span>
+                      <span>{formatCents(deliveryFeeCents)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between font-semibold text-white">
+                    <span>Total</span>
+                    <span>{formatCents(totalCents)}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Rodapé de UMA linha só: o total mora DENTRO do botão, em vez

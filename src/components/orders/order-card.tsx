@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import dynamic from "next/dynamic";
 
 import {
   Card,
@@ -19,6 +20,19 @@ import { OrderDetailsDialog } from "@/components/orders/order-details-dialog";
 import { formatCents } from "@/lib/currency";
 import { NEXT_ORDER_STATUS, ORDER_STATUS_LABEL, isOrderStatus } from "@/lib/order-status";
 import { updateOrderStatus, setOrderArchived } from "@/app/(dashboard)/dashboard/orders/actions";
+
+// Módulo "copiar-pedido": carregado sob demanda, e não com um import normal.
+//
+// Com import estático, o código do botão (e o montador do texto de WhatsApp)
+// desceria junto com a Central de pedidos para TODO lojista, inclusive quem
+// não contratou o módulo — o botão não apareceria, mas o download
+// aconteceria. `dynamic` transforma isso num arquivo separado, buscado só
+// quando `canCopyOrder` é verdadeiro. `ssr: false` porque ele só faz sentido
+// depois de montado no navegador (usa a área de transferência).
+const CopyOrderButton = dynamic(
+  () => import("@/modules/copiar-pedido/copy-order-button").then((m) => m.CopyOrderButton),
+  { ssr: false }
+);
 
 type OrderItem = {
   id: string;
@@ -40,9 +54,21 @@ type Order = {
   updatedAt: Date;
   items: OrderItem[];
   archived: boolean;
+  deliveryFeeCents?: number;
+  discountCents?: number;
+  neighborhood?: string | null;
 };
 
-export function OrderCard({ order }: { order: Order }) {
+export function OrderCard({
+  order,
+  // Ligado só quando o módulo "copiar-pedido" está habilitado para este
+  // restaurante (a página de Pedidos resolve isso no servidor). Quem não tem
+  // o módulo não recebe `true` e o botão nem é renderizado.
+  canCopyOrder = false,
+}: {
+  order: Order;
+  canCopyOrder?: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const nextStatus = isOrderStatus(order.status)
@@ -96,6 +122,7 @@ export function OrderCard({ order }: { order: Order }) {
             })}
           </CardDescription>
           <CardAction className="flex items-center gap-1.5">
+            {canCopyOrder && <CopyOrderButton order={order} />}
             {order.status === "completed" && (
               // Check verde dentro de um círculo — destaque visual de que o
               // pedido foi concluído com sucesso, além do badge de status.

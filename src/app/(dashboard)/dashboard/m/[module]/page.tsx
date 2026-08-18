@@ -5,6 +5,7 @@ import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { getAccessState } from "@/lib/access";
 import { isModuleEnabled } from "@/lib/modules";
 import { getModule } from "@/modules/registry";
+import { getModuleLoader } from "@/modules/loader";
 import { pageTitle } from "@/config/brand";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { PageHelp } from "@/components/dashboard/page-help";
@@ -59,7 +60,11 @@ export default async function ModulePage({
   if (!enabled) notFound();
 
   // Só AQUI o código do módulo é carregado — e só para quem tem direito.
-  const { default: ModuleView } = await definition.load();
+  // O carregador mora num arquivo à parte (src/modules/loader.ts) importado
+  // exclusivamente por esta rota; ver o comentário lá para o porquê.
+  const load = getModuleLoader(definition.key);
+  if (!load) notFound();
+  const { default: ModuleView } = await load();
 
   return (
     <div className="flex flex-col gap-6">

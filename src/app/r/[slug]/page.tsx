@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
 import { pageTitle } from "@/config/brand";
 import { DarkPortalRoot } from "@/components/theme/dark-portal-root";
 import { MenuClient } from "./menu-client";
+import { prisma } from "@/lib/prisma";
+import { getEnabledModuleKeys } from "@/lib/modules";
+import { isWithinBusinessHours, nowInRestaurantTimezone } from "@/modules/shared";
 
 export async function generateMetadata(
   props: PageProps<"/r/[slug]">
@@ -34,6 +37,45 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
   const categoriesWithProducts = restaurant.categories.filter(
     (c) => c.products.length > 0
   );
+
+  // ===== Módulos sob demanda no cardápio público =====
+  //
+  // Resolvidos no SERVIDOR: um restaurante sem o módulo nem recebe os dados
+  // dele no HTML, então não há como o campo de bairro ou de cupom aparecer
+  // para quem não contratou.
+  const moduleKeys = await getEnabledModuleKeys(restaurant.id);
+  const hasEntregas = moduleKeys.includes("entregas");
+  const hasHorarios = moduleKeys.includes("horarios");
+  const hasCupons = moduleKeys.includes("cupons");
+
+  const [deliveryZones, businessHours] = await Promise.all([
+    hasEntregas
+      ? prisma.deliveryZone.findMany({
+          where: { restaurantId: restaurant.id },
+          orderBy: [{ position: "asc" }, { neighborhood: "asc" }],
+          select: { id: true, neighborhood: true, feeCents: true },
+        })
+      : Promise.resolve([]),
+    hasHorarios
+      ? prisma.businessHour.findMany({
+          where: { restaurantId: restaurant.id },
+          select: { weekday: true, opensAt: true, closesAt: true, isClosed: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  // A loja está aberta quando o interruptor manual do lojista está ligado E,
+  // se o módulo de horários estiver ativo, o momento atual cai dentro da
+  // agenda. O interruptor manual continua valendo como fechamento de
+  // emergência — dá para fechar no meio do expediente sem mexer na agenda.
+  const openBySchedule = hasHorarios
+    ? isWithinBusinessHours(businessHours, nowInRestaurantTimezone())
+    : true;
+  const isOpen = restaurant.isOpen && openBySchedule;
+  // Fechado POR HORÁRIO (e não porque o lojista desligou) — muda o texto do
+  // selo e do aviso: "volte mais tarde" em vez de "não estamos aceitando
+  // pedidos", que soa como fechado de vez.
+  const closedBySchedule = restaurant.isOpen && !openBySchedule;
 
   return (
     // `min-h-dvh` (dynamic viewport height) em vez de `min-h-screen`
@@ -92,10 +134,14 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
               {restaurant.address}
             </p>
           )}
+          {/* Selo aberto/fechado: usa o estado EFETIVO (`isOpen`), que já
+              combina a chave manual do lojista com a agenda do módulo de
+              horários. Usar `restaurant.isOpen` aqui deixaria o selo dizendo
+              "Aberto agora" logo acima do aviso de que está fora do horário. */}
           <span
             className={cn(
               "mt-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1",
-              restaurant.isOpen
+              isOpen
                 ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/25"
                 : "bg-rose-500/15 text-rose-300 ring-rose-500/25"
             )}
@@ -103,10 +149,14 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
             <span
               className={cn(
                 "size-1.5 rounded-full",
-                restaurant.isOpen ? "bg-emerald-400 animate-pulse" : "bg-rose-400"
+                isOpen ? "bg-emerald-400 animate-pulse" : "bg-rose-400"
               )}
             />
-            {restaurant.isOpen ? "Aberto agora" : "Fechado no momento"}
+            {isOpen
+              ? "Aberto agora"
+              : closedBySchedule
+                ? "Fora do horário"
+                : "Fechado no momento"}
           </span>
         </header>
 
@@ -119,8 +169,11 @@ export default async function PublicMenuPage(props: PageProps<"/r/[slug]">) {
             slug={restaurant.slug}
             restaurantName={restaurant.name}
             restaurantPhone={restaurant.phone}
-            isOpen={restaurant.isOpen}
+            isOpen={isOpen}
             categories={categoriesWithProducts}
+            deliveryZones={deliveryZones}
+            couponsEnabled={hasCupons}
+            closedBySchedule={closedBySchedule}
           />
         )}
       </div>

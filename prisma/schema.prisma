@@ -167,6 +167,87 @@ model RestaurantModule {
 }
 
 // ---------------------------------------------------------------------------
+// Tabelas dos módulos sob demanda
+// ---------------------------------------------------------------------------
+//
+// Cada tabela abaixo pertence a UM módulo e só é lida/escrita pelo código
+// daquele módulo. Restaurante sem o módulo ligado nunca tem linha aqui — e,
+// se o módulo for desligado, os dados permanecem (desligar tira o acesso à
+// tela, não apaga o trabalho do lojista).
+
+/// Módulo "entregas": taxa de entrega fixa por bairro.
+model DeliveryZone {
+  id           String @id @default(cuid())
+  restaurantId String
+
+  /// Nome do bairro como o cliente vê no checkout.
+  neighborhood String
+  /// Taxa de entrega em centavos (0 = entrega grátis para o bairro).
+  feeCents     Int    @default(0)
+  position     Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // Um bairro não pode ser cadastrado duas vezes no mesmo restaurante.
+  @@unique([restaurantId, neighborhood])
+  @@map("delivery_zones")
+}
+
+/// Módulo "horarios": agenda de funcionamento por dia da semana.
+model BusinessHour {
+  id           String @id @default(cuid())
+  restaurantId String
+
+  /// 0 = domingo ... 6 = sábado (mesma convenção de Date.getDay()).
+  weekday  Int
+  /// Minutos desde a meia-noite. 480 = 08:00, 1320 = 22:00.
+  opensAt  Int     @default(480)
+  closesAt Int     @default(1320)
+  /// Dia em que a loja não abre (folga).
+  isClosed Boolean @default(false)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, weekday])
+  @@map("business_hours")
+}
+
+/// Módulo "cupons": códigos promocionais.
+model Coupon {
+  id           String @id @default(cuid())
+  restaurantId String
+
+  /// Sempre em MAIÚSCULAS (normalizado na gravação) — o cliente digita
+  /// como quiser e a comparação continua funcionando.
+  code String
+
+  /// "percent" (desconto em %) ou "fixed" (valor fixo em centavos).
+  discountType  String @default("percent")
+  /// Percentual (1-100) ou centavos, conforme `discountType`.
+  discountValue Int
+
+  /// Valor mínimo do pedido para o cupom valer (0 = sem mínimo).
+  minOrderCents Int @default(0)
+  /// Limite de usos (null = ilimitado).
+  maxUses       Int?
+  usedCount     Int @default(0)
+
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, code])
+  @@map("coupons")
+}
+
+// ---------------------------------------------------------------------------
 // Cobrança (Fase 2 — Cakto)
 // ---------------------------------------------------------------------------
 
@@ -232,6 +313,9 @@ model Restaurant {
   cashSessions CashSession[]
   reviews      Review[]
   modules      RestaurantModule[]
+  deliveryZones DeliveryZone[]
+  businessHours BusinessHour[]
+  coupons       Coupon[]
 
   @@map("restaurants")
 }
@@ -290,6 +374,18 @@ model Order {
   // pending -> preparing -> ready -> completed (ou cancelled a qualquer momento)
   status        String   @default("pending")
   totalCents    Int
+
+  // ----- Campos dos módulos sob demanda (ver src/modules/registry.ts) -----
+  // Todos com valor padrão ou nulos: um restaurante SEM os módulos ligados
+  // simplesmente nunca os preenche, e nenhum pedido antigo precisou mudar.
+  //
+  // `totalCents` continua sendo o VALOR FINAL cobrado (itens - desconto +
+  // entrega). Os campos abaixo existem para a conta ser auditável depois —
+  // sem eles, um pedido com cupom viraria só um total menor sem explicação.
+  deliveryFeeCents Int     @default(0)
+  discountCents    Int     @default(0)
+  couponCode       String?
+  neighborhood     String?
   // "cash" | "pix" | "card" — informado pela equipe ao fechar a mesa/pedido
   // (não existe no checkout do cliente). `null` = ainda não informado; não
   // entra na quebra por forma de pagamento do Caixa até ser preenchido.
