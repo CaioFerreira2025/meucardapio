@@ -13,6 +13,7 @@ import {
   Settings,
   ShieldCheck,
   Smartphone,
+  Sparkles,
   Star,
   Users,
   UtensilsCrossed,
@@ -30,6 +31,8 @@ import { stopImpersonation } from "@/app/admin/actions";
 // (antes eram 5), "Visão geral" quebrava em duas linhas e ficava
 // desalinhado com os outros. A sidebar do desktop continua usando `label`
 // por inteiro, sem nenhuma mudança visual lá.
+import type { ModuleNavItem } from "@/modules/registry";
+
 const NAV_ITEMS = [
   {
     href: "/dashboard",
@@ -74,15 +77,35 @@ export function DashboardShell({
   isAdmin = false,
   isImpersonating = false,
   impersonatedRestaurantName,
+  // Módulos sob demanda liberados para ESTE restaurante (ver
+  // src/modules/registry.ts). Chegam já resolvidos do layout — o shell não
+  // consulta permissão, só desenha o que recebeu.
+  moduleNavItems = [],
   children,
 }: {
   user: SessionUser;
   restaurantSlug: string;
+  moduleNavItems?: ModuleNavItem[];
   isAdmin?: boolean;
   isImpersonating?: boolean;
   impersonatedRestaurantName?: string;
   children: React.ReactNode;
 }) {
+  // Itens de módulo entram ANTES de Cobrança/Configurações: são ferramentas
+  // do dia a dia, e não administração da conta. Cobrança e Configurações
+  // ficam sempre no fim, onde o lojista já aprendeu a procurá-las.
+  const navItems = [
+    ...NAV_ITEMS.slice(0, -2),
+    ...moduleNavItems.map((m) => ({
+      href: `/dashboard/m/${m.key}`,
+      label: m.name,
+      shortLabel: m.shortLabel,
+      icon: Sparkles,
+      isModule: true as const,
+    })),
+    ...NAV_ITEMS.slice(-2),
+  ];
+
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
@@ -163,7 +186,7 @@ export function DashboardShell({
         </Link>
 
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
@@ -281,7 +304,7 @@ export function DashboardShell({
           Sombra na borda direita sinaliza que dá pra rolar pra ver mais. */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-xl md:hidden">
         <nav className="relative flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link

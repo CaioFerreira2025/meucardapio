@@ -7,6 +7,8 @@ import { formatCents } from "@/lib/currency";
 import { pageTitle } from "@/config/brand";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { SubscribersTable } from "@/components/admin/subscribers-table";
+import { RestaurantModules } from "@/components/admin/restaurant-modules";
+import { MODULES } from "@/modules/registry";
 
 export const metadata: Metadata = {
   title: pageTitle("Painel Administrativo"),
@@ -25,8 +27,17 @@ export default async function AdminPage() {
       owner: {
         include: { subscription: true },
       },
+      modules: { select: { moduleKey: true } },
     },
   });
+
+  // Só o que o client component precisa saber do registro (sem a função
+  // `load`, que não é serializável para o cliente).
+  const moduleOptions = MODULES.map((m) => ({
+    key: m.key,
+    name: m.name,
+    description: m.description,
+  }));
 
   const subscribers = restaurants.map((restaurant) => {
     const subscription = restaurant.owner.subscription;
@@ -83,6 +94,42 @@ export default async function AdminPage() {
       </div>
 
       <SubscribersTable subscribers={subscribers} />
+
+      {/* Módulos sob demanda: liga/desliga por cliente, conforme o combinado
+          comercial. Ver src/modules/registry.ts para criar módulos novos. */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-white">
+            Módulos sob demanda
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Ferramentas extras liberadas cliente a cliente. Quem não tem o
+            módulo ligado nem carrega o código dele.
+          </p>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          {restaurants.map((restaurant) => (
+            <div
+              key={restaurant.id}
+              className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-card p-4"
+            >
+              <div>
+                <p className="text-sm font-medium text-white">{restaurant.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {restaurant.owner.email}
+                </p>
+              </div>
+              <RestaurantModules
+                restaurantId={restaurant.id}
+                restaurantName={restaurant.name}
+                modules={moduleOptions}
+                enabledKeys={restaurant.modules.map((m) => m.moduleKey)}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

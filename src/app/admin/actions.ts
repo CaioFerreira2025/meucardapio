@@ -2,11 +2,13 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminEmail } from "@/lib/admin";
 import { IMPERSONATION_COOKIE } from "@/lib/restaurant-context";
+import { getModule } from "@/modules/registry";
 
 async function requireAdminSession() {
   const session = await auth();
@@ -53,4 +55,54 @@ export async function stopImpersonation() {
   cookieStore.delete(IMPERSONATION_COOKIE);
 
   redirect("/admin");
+}
+
+// Liga/desliga um módulo sob demanda para um restaurante específico.
+//
+// Ligar = criar a linha; desligar = apagar. Nada de coluna `active` booleana:
+// com o registro sumindo, "quais módulos este cliente tem?" continua sendo a
+// pergunta mais simples possível, e não sobra estado morto no banco.
+//
+// Desligar NÃO apaga nenhum dado que o módulo tenha gerado — só o acesso à
+// tela. Se o cliente voltar a contratar, tudo está onde estava.
+export async function setRestaurantModule(
+  restaurantId: string,
+  moduleKey: string,
+  enabled: boolean
+) {
+  const session = await requireAdminSession();
+
+  // Só aceita chaves que existem no registro do código: sem isso, um clique
+  // com o parâmetro adulterado gravaria lixo na tabela.
+  if (!getModule(moduleKey)) {
+    throw new Error(`Módulo desconhecido: ${moduleKey}`);
+  }
+
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+    select: { id: true },
+  });
+  if (!restaurant) {
+    throw new Error("Restaurante não encontrado.");
+  }
+
+  if (enabled) {
+    await prisma.restaurantModule.upsert({
+      where: { restaurantId_moduleKey: { restaurantId, moduleKey } },
+      create: {
+        restaurantId,
+        moduleKey,
+        enabledByEmail: session.user?.email ?? null,
+      },
+      // Já ligado: mantém a data original em vez de reiniciar o histórico.
+      update: {},
+    });
+  } else {
+    await prisma.restaurantModule.deleteMany({ where: { restaurantId, moduleKey } });
+  }
+
+  revalidatePath("/admin");
+  // O menu do cliente é montado no layout do painel — precisa revalidar para
+  // o item aparecer/sumir sem ele ter que deslogar.
+  revalidatePath("/dashboard", "layout");
 }

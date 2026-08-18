@@ -130,6 +130,42 @@ model TrialClaim {
   @@map("trial_claims")
 }
 
+// Módulos sob demanda habilitados para um restaurante.
+//
+// A linha existir = módulo ligado para aquele cliente. Não existir = base.
+//
+// `moduleKey` é String LIVRE, e não um enum do Prisma, de propósito: criar
+// um módulo novo precisa ser só adicionar uma entrada no registro em
+// src/modules/registry.ts e ligar para o cliente. Se fosse enum, todo
+// módulo novo exigiria uma migração de banco — e migração é exatamente o
+// tipo de mudança global que este desenho quer evitar, já que ela toca o
+// schema de TODOS os clientes para atender um só.
+//
+// Os campos de auditoria existem porque isto reflete um acordo comercial:
+// quando alguém perguntar "por que o Restaurante X tem esse recurso?", a
+// resposta está na própria linha, não na memória de quem ligou.
+model RestaurantModule {
+  id           String @id @default(cuid())
+  restaurantId String
+
+  /** Chave do módulo no registro (ver src/modules/registry.ts). */
+  moduleKey String
+
+  enabledAt      DateTime @default(now())
+  /** E-mail do admin que ligou — rastro de quem liberou o quê. */
+  enabledByEmail String?
+  /** Espaço livre: nº do contrato, combinado comercial, prazo de teste. */
+  notes          String?
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // Um módulo só pode estar ligado uma vez por restaurante.
+  @@unique([restaurantId, moduleKey])
+  // Para responder rápido "quais clientes têm o módulo X?".
+  @@index([moduleKey])
+  @@map("restaurant_modules")
+}
+
 // ---------------------------------------------------------------------------
 // Cobrança (Fase 2 — Cakto)
 // ---------------------------------------------------------------------------
@@ -195,6 +231,7 @@ model Restaurant {
   orders       Order[]
   cashSessions CashSession[]
   reviews      Review[]
+  modules      RestaurantModule[]
 
   @@map("restaurants")
 }

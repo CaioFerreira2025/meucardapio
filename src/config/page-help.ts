@@ -227,6 +227,31 @@ export const PAGE_HELP = {
       },
     ],
   },
+  // Ajuda genérica das telas de módulo sob demanda. Cada módulo pode ter a
+  // sua própria explicação dentro da própria tela; este texto responde a
+  // dúvida que é comum a todos ("por que eu tenho isso e meu colega não?").
+  module: {
+    title: "Módulo adicional",
+    intro:
+      "Esta é uma ferramenta extra, liberada especificamente para a sua conta — ela não faz parte do painel padrão.",
+    steps: [
+      {
+        title: "Exclusivo da sua conta",
+        description:
+          "Módulos são ativados um a um, conforme o combinado. Outros restaurantes não veem esta aba.",
+      },
+      {
+        title: "Não interfere no resto",
+        description:
+          "Cada módulo é independente do painel base — cardápio, pedidos e caixa continuam funcionando igual, com ou sem ele.",
+      },
+      {
+        title: "Precisa de ajuste?",
+        description:
+          "Fale com o suporte: dá para ativar novos módulos ou ajustar os atuais sem mexer no resto da sua operação.",
+      },
+    ],
+  },
 } as const satisfies Record<string, PageHelp>;
 
 export type PageHelpKey = keyof typeof PAGE_HELP;

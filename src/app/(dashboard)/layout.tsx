@@ -5,6 +5,8 @@ import { getEffectiveRestaurantContext } from "@/lib/restaurant-context";
 import { isAdminEmail } from "@/lib/admin";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { OrderNotifications } from "@/components/orders/order-notifications";
+import { getEnabledModuleKeys } from "@/lib/modules";
+import { toNavItems } from "@/modules/registry";
 
 export default async function DashboardLayout({
   children,
@@ -30,6 +32,10 @@ export default async function DashboardLayout({
     redirect("/onboarding");
   }
 
+  // Módulos sob demanda deste restaurante. Uma consulta por render (o
+  // resultado é memorizado por requisição), e o menu se monta a partir dela.
+  const moduleNavItems = toNavItems(await getEnabledModuleKeys(ctx.restaurant.id));
+
   return (
     <DashboardShell
       user={session.user}
@@ -37,6 +43,7 @@ export default async function DashboardLayout({
       isAdmin={admin}
       isImpersonating={ctx.isImpersonating}
       impersonatedRestaurantName={ctx.isImpersonating ? ctx.restaurant.name : undefined}
+      moduleNavItems={moduleNavItems}
     >
       <OrderNotifications />
       {children}
