@@ -6,12 +6,23 @@ import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { pageTitle } from "@/config/brand";
 import { CategoryFormDialog } from "@/components/menu/category-form-dialog";
 import { CategoryCard } from "@/components/menu/category-card";
+import { PaywallScreen } from "@/components/billing/paywall-screen";
+import { getAccessState } from "@/lib/access";
 
 export const metadata: Metadata = {
   title: pageTitle("Cardápio"),
 };
 
 export default async function MenuPage() {
+  // Paywall: com o teste expirado (ou pagamento pendente/assinatura
+  // encerrada) esta tela dá lugar à escolha de plano. Só "Cobrança" e
+  // "Configurações" seguem liberadas — são justamente as telas que o lojista
+  // precisa para voltar a ficar em dia.
+  const access = await getAccessState();
+  if (!access.hasFullAccess) {
+    return <PaywallScreen state={access} />;
+  }
+
   const restaurant = await getEffectiveRestaurant();
 
   const categories = await prisma.category.findMany({

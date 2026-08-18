@@ -32,6 +32,9 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { QrCodeCard } from "@/components/dashboard/qr-code-card";
 import { BillRequestsAlert } from "@/components/tables/bill-requests-alert";
+import { SubscriptionBanner } from "@/components/billing/subscription-banner";
+import { PaywallScreen } from "@/components/billing/paywall-screen";
+import { getAccessState } from "@/lib/access";
 
 export const metadata: Metadata = {
   title: pageTitle("Dashboard"),
@@ -43,6 +46,14 @@ export default async function DashboardPage() {
   // ou, em modo suporte, o do cliente impersonado).
   const restaurant = await getEffectiveRestaurant();
   const restaurantId = restaurant!.id;
+
+  // Checado ANTES das consultas pesadas abaixo: sem acesso, nem faz sentido
+  // pagar o custo de calcular faturamento, ticket médio e mais vendidos para
+  // jogar tudo fora.
+  const access = await getAccessState();
+  if (!access.hasFullAccess) {
+    return <PaywallScreen state={access} />;
+  }
 
   // Meia-noite de "hoje" no timezone do restaurante (Brasil), não no
   // timezone do servidor — ver comentário em src/lib/timezone.ts pro bug
@@ -136,6 +147,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Status da assinatura no topo de tudo — é a primeira coisa que o
+          lojista vê ao abrir o painel. Discreto quando está tudo em dia,
+          chamativo só quando exige ação. */}
+      <SubscriptionBanner state={access} />
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-white">

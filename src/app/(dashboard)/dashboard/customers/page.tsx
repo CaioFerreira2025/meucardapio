@@ -14,12 +14,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CustomerHistoryDialog } from "@/components/customers/customer-history-dialog";
+import { PaywallScreen } from "@/components/billing/paywall-screen";
+import { getAccessState } from "@/lib/access";
 
 export const metadata: Metadata = {
   title: pageTitle("Clientes"),
 };
 
 export default async function CustomersPage() {
+  // Paywall: com o teste expirado (ou pagamento pendente/assinatura
+  // encerrada) esta tela dá lugar à escolha de plano. Só "Cobrança" e
+  // "Configurações" seguem liberadas — são justamente as telas que o lojista
+  // precisa para voltar a ficar em dia.
+  const access = await getAccessState();
+  if (!access.hasFullAccess) {
+    return <PaywallScreen state={access} />;
+  }
+
   const restaurant = await getEffectiveRestaurant();
 
   const orders = await prisma.order.findMany({

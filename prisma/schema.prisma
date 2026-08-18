@@ -32,6 +32,15 @@ model User {
   image            String?
   password         String? // hash bcrypt, usado no login por credenciais
   stripeCustomerId String?   @unique
+
+  // Fim do período de teste gratuito (15 dias, ver TRIAL_DAYS em
+  // src/lib/access.ts). Preenchido no cadastro (src/app/api/register/route.ts).
+  // Opcional de propósito: contas criadas ANTES desta funcionalidade existir
+  // têm `null` aqui, e `null` é tratado como "sem trial registrado" — nunca
+  // como "trial vencido" —, então nenhuma conta antiga é bloqueada de
+  // surpresa por causa de um campo que não existia quando ela foi criada.
+  trialEndsAt      DateTime?
+
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

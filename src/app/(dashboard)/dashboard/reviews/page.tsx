@@ -9,6 +9,8 @@ import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { PaywallScreen } from "@/components/billing/paywall-screen";
+import { getAccessState } from "@/lib/access";
 
 export const metadata: Metadata = {
   title: pageTitle("Avaliações"),
@@ -32,6 +34,15 @@ function StarRow({ rating, size = "size-4" }: { rating: number; size?: string })
 }
 
 export default async function ReviewsPage() {
+  // Paywall: com o teste expirado (ou pagamento pendente/assinatura
+  // encerrada) esta tela dá lugar à escolha de plano. Só "Cobrança" e
+  // "Configurações" seguem liberadas — são justamente as telas que o lojista
+  // precisa para voltar a ficar em dia.
+  const access = await getAccessState();
+  if (!access.hasFullAccess) {
+    return <PaywallScreen state={access} />;
+  }
+
   const restaurant = await getEffectiveRestaurant();
 
   const reviews = await prisma.review.findMany({
