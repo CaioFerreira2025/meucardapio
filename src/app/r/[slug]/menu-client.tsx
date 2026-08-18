@@ -458,34 +458,41 @@ export function MenuClient({
               </button>
             }
           />
-          {/* Checkout como bottom sheet, ancorado embaixo da tela — não mais
-              um Dialog centralizado (`top-1/2 left-1/2` com transform).
-              Motivo da troca: um modal centralizado por transform é
-              posicionado a partir do viewport de LAYOUT, que no Safari/iOS
-              não encolhe quando o teclado virtual abre (só o viewport
-              VISUAL encolhe) — resultado, o modal podia ficar
-              descentralizado/cortado de um jeito imprevisível assim que um
-              campo ganhava foco. Um sheet ancorado com `bottom-0` não sofre
-              disso: a borda inferior dele já é a borda inferior da tela por
-              definição, então não há recentralização pra dar errado.
-              Mesmo padrão (`max-h-[85dvh]` + `overflow-y-auto` só na área de
-              conteúdo, botão de enviar fora dela) já comprovado no sheet de
-              Busca deste mesmo arquivo, que também abre teclado. Antes desse
-              checkout ter virado bottom sheet, ele foi um sheet lateral
-              (side="right") — tinha um bug de largura (`data-[side=right]:w-3/4`
-              do componente Sheet vencia a largura custom por especificidade
-              CSS) que não existe no lado "bottom". */}
+          {/* Checkout em TELA CHEIA no celular (e bottom sheet só a partir de
+              `sm`, onde sobra espaço de monitor).
+
+              Histórico do porquê, pra não voltar atrás: como modal
+              centralizado (`top-1/2` + transform) ele descentralizava quando
+              o teclado abria; como bottom sheet limitado a `max-h-[85dvh]`
+              ele passou a subir certo, mas ENCOLHIA — com o teclado ocupando
+              ~40% da tela, sobrava um cartãozinho espremido onde mal cabia um
+              campo por vez. A raiz do problema é disputar altura com o
+              teclado: qualquer altura fixa que caiba na tela inteira não cabe
+              mais quando o teclado sobe.
+
+              A saída é não disputar: em tela cheia o painel ocupa TODO o
+              espaço disponível a cada momento. `top-0` + `bottom` (via style,
+              descontando o teclado) + a `h-auto` que o componente Sheet já
+              aplica no lado "bottom" fazem o elemento esticar entre as duas
+              âncoras — sem teclado ocupa a tela toda, com teclado ocupa tudo
+              o que sobra acima dele. Como não há mais cartão flutuante, não
+              há o que "espremer": só a área de conteúdo (a única que rola)
+              muda de tamanho, com cabeçalho e o botão "Enviar pedido" sempre
+              fixos nas pontas. É o mesmo padrão dos apps de delivery, onde
+              finalizar pedido é uma tela, não uma caixinha.
+
+              A partir de `sm` volta a ser um sheet: `sm:top-auto` devolve a
+              altura ao conteúdo, com o teto de 85dvh e cantos arredondados. */}
           <SheetContent
             side="bottom"
-            className="mx-auto flex w-full flex-col gap-0 overflow-hidden rounded-t-2xl p-0 sm:max-w-lg"
+            className="top-0 mx-auto flex w-full flex-col gap-0 overflow-hidden p-0 sm:top-auto sm:max-h-[85dvh] sm:max-w-lg sm:rounded-t-2xl"
             style={{
-              // Com teclado aberto, o sheet inteiro sobe exatamente a altura
-              // dele e passa a caber no espaço que sobrou — em vez de manter
-              // a base atrás do teclado e ir cortando os campos de baixo.
+              // Sobe a base do painel exatamente a altura do teclado. Sem
+              // teclado, `keyboardInset` é 0 e isso vira `bottom: 0`.
+              // (O teto de altura é só do sheet de desktop, via
+              // `sm:max-h-[85dvh]` — no celular quem manda é o par
+              // top-0/bottom acima, que estica pelo espaço disponível.)
               bottom: keyboardInset,
-              maxHeight: keyboardInset
-                ? `calc(100dvh - ${keyboardInset}px - 1rem)`
-                : "85dvh",
               // A margem de segurança do aparelho (barra de gestos) só faz
               // sentido com o teclado FECHADO; aberto, quem ocupa a base é o
               // teclado, e somar os dois deixaria uma faixa morta.
