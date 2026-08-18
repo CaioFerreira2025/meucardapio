@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminEmail } from "@/lib/admin";
 import { getEffectiveRestaurantContext } from "@/lib/restaurant-context";
-import { getPlanByOfferId, type Plan } from "@/config/plans";
+import { getPlanByOfferId, type Plan, type PlanPrice } from "@/config/plans";
 
 // Dias de teste gratuito dados a toda conta nova (acesso equivalente ao
 // plano Pro). Preenchido em `trialEndsAt` no cadastro — ver
@@ -44,6 +44,8 @@ export type AccessState = {
   // Verdadeiro quando falta pouco e vale avisar de forma mais chamativa.
   endingSoon: boolean;
   plan: Plan | undefined;
+  /** Preço/ciclo efetivamente contratado (mensal, trimestral ou anual). */
+  planPrice: PlanPrice | undefined;
 };
 
 function daysUntil(date: Date, now: Date): number {
@@ -75,6 +77,7 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
     daysLeft: 0,
     endingSoon: false,
     plan: undefined,
+    planPrice: undefined,
   };
 
   if (!session?.user?.id) return staff;
@@ -105,7 +108,9 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
   if (!user) return staff;
 
   const subscription = user.subscription;
-  const plan = getPlanByOfferId(subscription?.caktoOfferId);
+  const matched = getPlanByOfferId(subscription?.caktoOfferId);
+  const plan = matched?.plan;
+  const planPrice = matched?.price;
 
   if (subscription) {
     const paidUntil = subscription.currentPeriodEnd;
@@ -121,6 +126,7 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
         daysLeft,
         endingSoon: daysLeft <= SUBSCRIPTION_ENDING_SOON_DAYS,
         plan,
+        planPrice,
       };
     }
 
@@ -135,6 +141,7 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
         daysLeft,
         endingSoon: true,
         plan,
+        planPrice,
       };
     }
 
@@ -145,6 +152,7 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
       daysLeft: 0,
       endingSoon: false,
       plan,
+      planPrice,
     };
   }
 
@@ -159,6 +167,7 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
       daysLeft,
       endingSoon: daysLeft <= TRIAL_ENDING_SOON_DAYS,
       plan: undefined,
+      planPrice: undefined,
     };
   }
 
@@ -177,5 +186,6 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
     daysLeft: 0,
     endingSoon: false,
     plan: undefined,
+    planPrice: undefined,
   };
 });

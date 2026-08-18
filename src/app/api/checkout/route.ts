@@ -4,10 +4,13 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getCaktoCheckoutUrl } from "@/lib/cakto";
-import { PLANS } from "@/config/plans";
+import { PLANS, formatCycleLabel, type BillingCycle } from "@/config/plans";
 
 const bodySchema = z.object({
   planId: z.enum(["starter", "pro"]),
+  // Ciclo opcional para compatibilidade: uma chamada antiga sem `cycle`
+  // continua caindo no mensal, em vez de virar erro 400.
+  cycle: z.enum(["monthly", "quarterly", "annual"]).default("monthly"),
 });
 
 // Diferente do checkout do Stripe (que criava uma sessão via API antes de
@@ -31,10 +34,15 @@ export async function POST(request: Request) {
   }
 
   const plan = PLANS.find((item) => item.id === parsed.data.planId);
-  if (!plan?.caktoOfferId) {
+  const cycle: BillingCycle = parsed.data.cycle;
+  const price = plan?.prices[cycle];
+
+  if (!price?.caktoOfferId) {
+    // Mensagem nomeia plano E periodicidade: com 6 ofertas, "oferta não
+    // configurada" sem dizer qual delas custa tempo de diagnóstico.
     return NextResponse.json(
       {
-        error: `Oferta da Cakto para o plano "${parsed.data.planId}" não configurada (ver CAKTO_OFFER_ID_* no .env).`,
+        error: `Oferta da Cakto para "${plan?.name ?? parsed.data.planId} — ${formatCycleLabel(cycle)}" não configurada (ver CAKTO_OFFER_ID_* no .env).`,
       },
       { status: 500 }
     );
@@ -48,7 +56,7 @@ export async function POST(request: Request) {
     select: { document: true, phone: true },
   });
 
-  const url = getCaktoCheckoutUrl(plan.caktoOfferId, {
+  const url = getCaktoCheckoutUrl(price.caktoOfferId, {
     email: session.user.email,
     name: session.user.name,
     document: user?.document,

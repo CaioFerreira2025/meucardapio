@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { HeroSection } from "@/components/landing/hero-section";
 import { DemoShowcase } from "@/components/landing/demo-showcase";
+import { ZeroCommissionSection } from "@/components/landing/zero-commission-section";
+import { OperationSection } from "@/components/landing/operation-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { PricingSection } from "@/components/landing/pricing-section";
@@ -29,6 +31,13 @@ export default async function Home() {
       <LandingHeader isAuthenticated={Boolean(session?.user)} />
       <main className="flex-1">
         <HeroSection />
+        {/* As duas seções abaixo vêm logo após a Hero de propósito: são o
+            argumento comercial mais forte para o lojista que hoje vende por
+            aplicativo (0% de comissão) e para o que ainda anota no papel.
+            Deixá-las no fim da página seria entregá-las a quem já rolou o
+            site inteiro — ou seja, a quem já estava convencido. */}
+        <ZeroCommissionSection />
+        <OperationSection />
         <DemoShowcase />
         <FeaturesSection />
         <HowItWorksSection />

@@ -137,10 +137,11 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="max-w-2xl text-lg text-zinc-400 sm:text-xl"
         >
-          O {BRAND_NAME} é o cardápio digital e sistema de pedidos do seu
-          jeito: seus clientes escaneiam o QR Code, montam o pedido e você
-          acompanha tudo em tempo real — sem planilha, sem WhatsApp
-          bagunçado, sem esperar.
+          Com o {BRAND_NAME} seu cardápio vira um link para vender direto no
+          WhatsApp e no Instagram — <strong className="font-semibold text-zinc-200">
+          sem pagar comissão por pedido</strong>. Os pedidos caem organizados no
+          seu painel, e o QR Code na mesa fica disponível se você também
+          atende no salão.
         </motion.p>
 
         <motion.div

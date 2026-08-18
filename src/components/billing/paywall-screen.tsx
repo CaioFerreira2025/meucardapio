@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { PLANS } from "@/config/plans";
+import { ANNUAL_DISCOUNT_PERCENT, PLANS } from "@/config/plans";
+import { formatCents } from "@/lib/currency";
 import type { AccessState } from "@/lib/access";
 
 // Tela mostrada no lugar do conteúdo de uma página do painel quando o acesso
@@ -57,10 +58,11 @@ export function PaywallScreen({ state }: { state: AccessState }) {
               <p className="text-sm text-muted-foreground">{plan.description}</p>
             </div>
             <p className="text-3xl font-semibold tracking-tight text-white">
-              {plan.price.split("/")[0]}
-              <span className="text-sm font-normal text-muted-foreground">
-                /{plan.price.split("/")[1] ?? "mês"}
-              </span>
+              {formatCents(plan.prices.annual.monthlyEquivalentCents)}
+              <span className="text-sm font-normal text-muted-foreground">/mês</span>
+            </p>
+            <p className="-mt-2 text-xs text-emerald-300">
+              no plano anual · economize {ANNUAL_DISCOUNT_PERCENT}%
             </p>
             <ul className="flex flex-1 flex-col gap-1.5 text-sm text-muted-foreground">
               {plan.features.map((feature) => (

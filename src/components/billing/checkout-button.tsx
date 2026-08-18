@@ -6,14 +6,20 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Plan } from "@/config/plans";
+import type { BillingCycle } from "@/config/plans";
 
 export function CheckoutButton({
-  plan,
+  planId,
+  cycle,
+  highlighted = false,
   isAuthenticated,
   className,
 }: {
-  plan: Plan;
+  planId: "starter" | "pro";
+  // O ciclo escolhido viaja junto: é ele que define QUAL das seis ofertas
+  // da Cakto será aberta (ver src/config/plans.ts).
+  cycle: BillingCycle;
+  highlighted?: boolean;
   isAuthenticated: boolean;
   className?: string;
 }) {
@@ -31,7 +37,7 @@ export function CheckoutButton({
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: plan.id }),
+        body: JSON.stringify({ planId, cycle }),
       });
       const data = await response.json();
 
@@ -51,7 +57,7 @@ export function CheckoutButton({
   return (
     <Button
       className={cn("w-full", className)}
-      variant={plan.highlighted ? "default" : "outline"}
+      variant={highlighted ? "default" : "outline"}
       onClick={handleClick}
       disabled={isLoading}
     >

@@ -4,7 +4,8 @@ import { Check, CreditCard, Sparkles } from "lucide-react";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getPlanByOfferId } from "@/config/plans";
+import { getPlanByOfferId, formatCycleLabel } from "@/config/plans";
+import { formatCents } from "@/lib/currency";
 import { pageTitle } from "@/config/brand";
 import {
   Card,
@@ -55,7 +56,9 @@ export default async function BillingPage() {
       })
     : null;
 
-  const plan = getPlanByOfferId(subscription?.caktoOfferId);
+  const matched = getPlanByOfferId(subscription?.caktoOfferId);
+  const plan = matched?.plan;
+  const planPrice = matched?.price;
 
   return (
     <div className="flex flex-col gap-6">
@@ -81,7 +84,7 @@ export default async function BillingPage() {
               <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/20">
                 <CreditCard className="size-4 text-orange-300" />
               </span>
-              {plan?.name ?? "Nenhum plano ativo"}
+              {plan ? `${plan.name} · ${formatCycleLabel(planPrice!.cycle)}` : "Nenhum plano ativo"}
             </CardTitle>
             {subscription && (
               <span
@@ -102,10 +105,22 @@ export default async function BillingPage() {
                 : `Renova em ${subscription.currentPeriodEnd.toLocaleDateString("pt-BR")}.`
               : "Você ainda não tem uma assinatura ativa. Assine um plano para liberar todos os recursos do painel."}
           </CardDescription>
-          {plan && (
-            <p className="text-3xl font-semibold tracking-tight text-white">
-              {plan.price}
-            </p>
+          {plan && planPrice && (
+            <>
+              <p className="text-3xl font-semibold tracking-tight text-white">
+                {formatCents(planPrice.monthlyEquivalentCents)}
+                <span className="text-sm font-normal text-muted-foreground">/mês</span>
+              </p>
+              {/* Só faz sentido explicar a cobrança quando ela NÃO é mensal —
+                  no mensal, "R$ 49/mês" já é literalmente o que sai do
+                  cartão, e repetir isso seria ruído. */}
+              {planPrice.months > 1 && (
+                <p className="text-sm text-muted-foreground">
+                  {formatCents(planPrice.totalCents)} cobrados a cada{" "}
+                  {planPrice.months} meses.
+                </p>
+              )}
+            </>
           )}
         </CardHeader>
         {plan && (

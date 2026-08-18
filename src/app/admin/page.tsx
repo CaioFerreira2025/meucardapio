@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Users, Wallet } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
-import { getPlanByOfferId } from "@/config/plans";
+import { getPlanByOfferId, formatCycleLabel } from "@/config/plans";
 import { formatCents } from "@/lib/currency";
 import { pageTitle } from "@/config/brand";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -41,7 +41,7 @@ export default async function AdminPage() {
 
   const subscribers = restaurants.map((restaurant) => {
     const subscription = restaurant.owner.subscription;
-    const plan = getPlanByOfferId(subscription?.caktoOfferId);
+    const matched = getPlanByOfferId(subscription?.caktoOfferId);
     return {
       id: restaurant.id,
       name: restaurant.name,
@@ -49,8 +49,14 @@ export default async function AdminPage() {
       ownerName: restaurant.owner.name,
       ownerEmail: restaurant.owner.email,
       whatsapp: restaurant.phone,
-      planName: plan?.name ?? null,
-      priceCents: plan?.priceCents ?? null,
+      planName: matched
+        ? `${matched.plan.name} · ${formatCycleLabel(matched.price.cycle)}`
+        : null,
+      // MRR usa o equivalente MENSAL, nunca o valor cobrado: um cliente que
+      // paga R$ 831,60 uma vez por ano contribui com R$ 69,30 por mês para a
+      // receita recorrente. Somar o valor cheio inflaria o MRR em 12x e
+      // tornaria a métrica inútil justamente quando o plano anual vender bem.
+      priceCents: matched?.price.monthlyEquivalentCents ?? null,
       status: subscription?.status ?? null,
       cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd ?? false,
     };
