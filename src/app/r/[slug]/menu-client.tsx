@@ -115,27 +115,34 @@ export function MenuClient({
   const [phoneError, setPhoneError] = useState("");
   const [tableError, setTableError] = useState("");
 
-  // Altura do teclado virtual, em px, medida pela Visual Viewport API.
+  // Retângulo da área REALMENTE visível da tela (o "visual viewport"),
+  // usado para ancorar o modal de checkout enquanto o teclado está aberto.
   //
-  // O `interactiveWidget: "resizes-content"` declarado em layout.tsx já
-  // resolve isso sozinho onde é suportado (Chrome/Android): o layout
-  // encolhe e um elemento com `bottom: 0` sobe naturalmente. No Safari/iOS
-  // o suporte é inconsistente, e lá o teclado é desenhado POR CIMA da
-  // página sem encolher o viewport de layout — resultado: um bottom sheet
-  // ancorado em `bottom: 0` fica com a parte de baixo (justamente o botão
-  // "Enviar pedido" e os últimos campos) escondida atrás do teclado.
+  // Por que guardar o retângulo inteiro, e não só a altura do teclado:
   //
-  // A conta abaixo é a diferença entre a altura da janela e a altura da
-  // parte REALMENTE visível — que é exatamente o quanto o teclado ocupa.
-  // Onde `interactive-widget` já funciona, `window.innerHeight` também
-  // encolhe junto e essa conta dá ~0, então os dois mecanismos convivem
-  // sem brigar (não dá pra empurrar duas vezes).
+  // A versão anterior calculava um único número (quanto o teclado ocupa) e
+  // aplicava como `bottom`. O cálculo já considerava `offsetTop` — o quanto
+  // o Safari rolou a área visível para revelar o campo em foco —, mas
+  // aplicar só `bottom` ignora esse deslocamento. Resultado: quando o iOS
+  // rolava o visual viewport (o que ele faz sozinho ao focar um input), o
+  // painel saía do lugar e o rodapé com "Enviar pedido" parecia flutuar
+  // solto acima do teclado, deslocado do resto do modal.
   //
-  // Tentativa anterior errou o alvo por aplicar isso como `maxHeight` num
-  // modal CENTRALIZADO por transform: encolher a altura de algo centrado
-  // por `translate(-50%,-50%)` mexe no ponto de ancoragem e o modal
-  // "pulava". Ancorado embaixo, o ajuste é só um deslocamento — previsível.
-  const [keyboardInset, setKeyboardInset] = useState(0);
+  // Fixar `top` E `height` no retângulo visível elimina a classe inteira do
+  // problema: o modal passa a ocupar exatamente a área visível, aconteça o
+  // que acontecer com a rolagem. Como o rodapé é o último filho do flex, ele
+  // fica encostado na borda de baixo dessa área — ou seja, colado no topo do
+  // teclado, nunca por baixo dele e nunca boiando.
+  //
+  // `keyboardOpen` existe para o ajuste valer SÓ com o teclado aberto: com
+  // ele fechado, nenhum estilo em linha é aplicado e o CSS normal volta a
+  // mandar (tela cheia no celular, bottom sheet no desktop).
+  const [viewportRect, setViewportRect] = useState<{
+    top: number;
+    height: number;
+    keyboardOpen: boolean;
+  } | null>(null);
+
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
@@ -144,8 +151,14 @@ export function MenuClient({
       const inset = window.innerHeight - vv!.height - vv!.offsetTop;
       // Ruído de 1-2px acontece só por arredondamento de zoom; só trata
       // como "teclado aberto" a partir de uma faixa que nenhum navegador
-      // produz por acidente.
-      setKeyboardInset(inset > 80 ? Math.round(inset) : 0);
+      // produz por acidente. Onde `interactiveWidget: "resizes-content"`
+      // funciona (Chrome/Android), `window.innerHeight` encolhe junto, essa
+      // conta dá ~0 e nada é aplicado — os dois mecanismos não se somam.
+      setViewportRect({
+        top: Math.round(vv!.offsetTop),
+        height: Math.round(vv!.height),
+        keyboardOpen: inset > 80,
+      });
     }
 
     update();
@@ -157,6 +170,20 @@ export function MenuClient({
     };
   }, []);
 
+  // Estilo aplicado ao modal enquanto o teclado está aberto: gruda o painel
+  // no retângulo visível. Fora isso, `undefined` — nenhum estilo em linha,
+  // nenhuma chance de brigar com o CSS responsivo.
+  const keyboardOpen = Boolean(viewportRect?.keyboardOpen);
+  const pinnedToViewport = keyboardOpen
+    ? {
+        top: viewportRect!.top,
+        height: viewportRect!.height,
+        bottom: "auto" as const,
+        maxHeight: "none" as const,
+        paddingBottom: 0,
+      }
+    : undefined;
+
   // Ao focar um campo do formulário de checkout, traz o campo pra área
   // visível assim que o teclado termina de abrir. `block: "nearest"` (e não
   // "center") de propósito: dentro de um container que já rola, "center"
@@ -165,7 +192,7 @@ export function MenuClient({
   // cortada". "nearest" move só o mínimo pra o campo aparecer.
   //
   // O atraso existe porque no momento do evento `focus` o teclado ainda
-  // está animando: a altura visível (e portanto `keyboardInset` acima)
+  // está animando: a altura visível (e portanto `viewportRect` acima)
   // ainda não se estabilizou, então um scroll calculado ali erra o alvo.
   function handleFieldFocus(e: FocusEvent<HTMLElement>) {
     const target = e.currentTarget;
@@ -486,20 +513,17 @@ export function MenuClient({
           <SheetContent
             side="bottom"
             className="top-0 mx-auto flex w-full flex-col gap-0 overflow-hidden p-0 sm:top-auto sm:max-h-[85dvh] sm:max-w-lg sm:rounded-t-2xl"
-            style={{
-              // Sobe a base do painel exatamente a altura do teclado. Sem
-              // teclado, `keyboardInset` é 0 e isso vira `bottom: 0`.
-              // (O teto de altura é só do sheet de desktop, via
-              // `sm:max-h-[85dvh]` — no celular quem manda é o par
-              // top-0/bottom acima, que estica pelo espaço disponível.)
-              bottom: keyboardInset,
-              // A margem de segurança do aparelho (barra de gestos) só faz
-              // sentido com o teclado FECHADO; aberto, quem ocupa a base é o
-              // teclado, e somar os dois deixaria uma faixa morta.
-              paddingBottom: keyboardInset
-                ? 0
-                : "env(safe-area-inset-bottom)",
-            }}
+            // Com o teclado ABERTO, `pinnedToViewport` gruda o painel no
+            // retângulo visível (ver comentário na definição, lá em cima) — é
+            // o que mantém o rodapé estável, colado no topo do teclado.
+            // Com o teclado FECHADO não há estilo em linha nenhum: vale o CSS
+            // acima (tela cheia no celular, sheet no desktop) mais a margem de
+            // segurança da barra de gestos, que só faz sentido nesse caso —
+            // com o teclado aberto quem ocupa a base é ele, e somar os dois
+            // deixaria uma faixa morta.
+            style={
+              pinnedToViewport ?? { paddingBottom: "env(safe-area-inset-bottom)" }
+            }
           >
             <SheetHeader className="gap-0.5 p-4 pb-3">
               <SheetTitle className="text-white">
@@ -676,7 +700,14 @@ export function MenuClient({
                 meio campo) sem esconder o valor do cliente, que continua
                 vendo quanto vai pagar antes de confirmar. Mesmo padrão dos
                 apps de delivery. */}
-            <div className="mt-auto border-t border-border p-4">
+            {/* `shrink-0` é o detalhe que trava o rodapé: sem ele, um flex
+                item pode ser comprimido quando o espaço aperta (exatamente o
+                que acontece com o teclado aberto) e o botão encolheria junto
+                com a área do formulário, em vez de manter a altura.
+                `sticky bottom-0` + fundo sólido é a garantia adicional de que
+                ele nunca é rolado para fora nem deixa o conteúdo aparecer por
+                baixo enquanto a lista rola. */}
+            <div className="sticky bottom-0 mt-auto shrink-0 border-t border-border bg-popover p-4">
               <Button
                 className="h-12 w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
                 disabled={isSubmitting || !isOpen}
@@ -764,19 +795,14 @@ export function MenuClient({
           que batem com o texto digitado, com atalho de adicionar direto ao
           carrinho sem precisar rolar até a seção da categoria. O campo de
           busca tem `autoFocus`, ou seja, o teclado abre junto com o sheet —
-          então recebe o MESMO deslocamento por `keyboardInset` do checkout
+          então recebe a MESMA ancoragem por `pinnedToViewport` do checkout
           (ver comentário lá em cima), senão a lista de resultados nasce
           escondida atrás do teclado. */}
       <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
         <SheetContent
           side="bottom"
           className="flex flex-col overflow-hidden"
-          style={{
-            bottom: keyboardInset,
-            maxHeight: keyboardInset
-              ? `calc(100dvh - ${keyboardInset}px - 1rem)`
-              : "85dvh",
-          }}
+          style={pinnedToViewport ?? { maxHeight: "85dvh" }}
         >
           <SheetHeader>
             <SheetTitle className="text-white">Buscar no cardápio</SheetTitle>
