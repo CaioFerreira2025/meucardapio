@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { pageTitle } from "@/config/brand";
 import { RestaurantSettingsForm } from "@/components/dashboard/restaurant-settings-form";
+import { PageHelp } from "@/components/dashboard/page-help";
 
 export const metadata: Metadata = {
   title: pageTitle("Configurações"),
@@ -14,8 +15,9 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">
+        <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
           Configurações
+          <PageHelp page="settings" />
         </h1>
         <p className="text-muted-foreground">
           Edite a identidade do seu restaurante — nome, contato e logo.

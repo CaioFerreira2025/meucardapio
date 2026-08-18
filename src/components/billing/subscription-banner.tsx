@@ -26,6 +26,10 @@ export function SubscriptionBanner({ state }: { state: AccessState }) {
         title: "Seu teste gratuito terminou",
         body: "Escolha um plano para voltar a usar o painel e continuar recebendo pedidos pelo cardápio digital.",
       },
+      trial_unavailable: {
+        title: "Escolha um plano para começar",
+        body: "O teste gratuito de 15 dias já foi utilizado por este CPF/CNPJ ou WhatsApp. Assine um plano para liberar o painel.",
+      },
       past_due: {
         title: "Não conseguimos confirmar seu pagamento",
         body: "Sua assinatura está com pagamento pendente. Regularize para reativar o acesso ao painel.",
@@ -34,7 +38,7 @@ export function SubscriptionBanner({ state }: { state: AccessState }) {
         title: "Sua assinatura foi encerrada",
         body: "Assine novamente para retomar o acesso completo ao painel.",
       },
-    }[state.kind as "trial_expired" | "past_due" | "canceled"];
+    }[state.kind as "trial_expired" | "trial_unavailable" | "past_due" | "canceled"];
 
     return (
       <Banner

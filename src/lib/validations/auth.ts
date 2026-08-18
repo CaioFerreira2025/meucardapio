@@ -3,6 +3,12 @@ import { z } from "zod";
 export const registerSchema = z.object({
   name: z.string().min(2, "Informe seu nome completo").max(100),
   email: z.string().email("Email inválido"),
+  // Validados de verdade (dígitos verificadores de CPF/CNPJ, formato de
+  // celular) em src/lib/identity.ts, na rota de cadastro. Aqui o schema só
+  // garante que vieram preenchidos e num tamanho plausível — a checagem
+  // forte precisa das funções de identity, que não cabem num schema Zod.
+  document: z.string().trim().min(1, "Informe seu CPF ou CNPJ").max(20),
+  phone: z.string().trim().min(1, "Informe seu WhatsApp").max(20),
   password: z
     .string()
     .min(8, "A senha precisa ter pelo menos 8 caracteres")

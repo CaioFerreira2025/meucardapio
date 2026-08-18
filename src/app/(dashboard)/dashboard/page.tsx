@@ -35,6 +35,9 @@ import { BillRequestsAlert } from "@/components/tables/bill-requests-alert";
 import { SubscriptionBanner } from "@/components/billing/subscription-banner";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
+import { getOnboardingProgress } from "@/lib/onboarding-progress";
+import { PageHelp } from "@/components/dashboard/page-help";
 
 export const metadata: Metadata = {
   title: pageTitle("Dashboard"),
@@ -67,6 +70,7 @@ export default async function DashboardPage() {
     validOrders,
     todayItems,
     tablesAwaitingBill,
+    onboardingProgress,
   ] = await Promise.all([
       prisma.order.count({
         where: { restaurantId, status: { in: ["pending", "preparing"] } },
@@ -111,6 +115,7 @@ export default async function DashboardPage() {
         },
       }),
       getTablesAwaitingBill(restaurantId),
+    getOnboardingProgress(restaurantId),
     ]);
 
   const todayTotalCents = todayOrders.reduce((sum, o) => sum + o.totalCents, 0);
@@ -154,8 +159,9 @@ export default async function DashboardPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white">
+          <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
             Olá, {session?.user?.name?.split(" ")[0] ?? "por aqui"}
+            <PageHelp page="dashboard" />
           </h1>
           <p className="text-muted-foreground">
             Painel do <strong className="text-foreground">{restaurant!.name}</strong>.
@@ -173,6 +179,13 @@ export default async function DashboardPage() {
       </div>
 
       <BillRequestsAlert tables={tablesAwaitingBill} />
+
+      {/* Guia de primeiros passos — some sozinho quando os três estiverem
+          concluídos (ver comentário no componente). */}
+      <OnboardingChecklist
+        progress={onboardingProgress}
+        restaurantSlug={restaurant!.slug}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

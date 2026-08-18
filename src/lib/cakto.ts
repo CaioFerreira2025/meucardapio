@@ -1,5 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 
+import { toInternationalPhone } from "@/lib/identity";
+
 // Integração com a Cakto — gateway de pagamentos (Pix, cartão de crédito e
 // débito) que substitui a integração anterior com o Stripe.
 //
@@ -80,14 +82,53 @@ export async function caktoFetch(path: string, init: RequestInit = {}) {
 // e é como casamos o pagamento com o usuário certo do nosso sistema.
 export function getCaktoCheckoutUrl(
   offerId: string,
-  customer: { email: string; name?: string | null }
+  customer: {
+    email: string;
+    name?: string | null;
+    /** CPF/CNPJ só com dígitos (ver src/lib/identity.ts). */
+    document?: string | null;
+    /** Celular só com dígitos, SEM o 55 — adicionado aqui. */
+    phone?: string | null;
+    /** Id do usuário no nosso banco, para casar o webhook com a conta. */
+    userId?: string | null;
+  }
 ): string {
   const url = new URL(`https://pay.cakto.com.br/${offerId}`);
   url.searchParams.set("email", customer.email);
   if (customer.name) {
     url.searchParams.set("name", customer.name);
   }
+  // Pré-preencher documento e telefone tem dois efeitos: menos fricção no
+  // checkout e, principalmente, mais chance de o payload do webhook voltar
+  // com os MESMOS valores que temos no banco — que é como identificamos a
+  // conta quando o cliente paga usando outro e-mail (ver a cascata de
+  // identificação em src/app/api/webhooks/cakto/route.ts).
+  if (customer.document) {
+    url.searchParams.set("cpf", customer.document);
+  }
+  if (customer.phone) {
+    url.searchParams.set("phone", toInternationalPhone(customer.phone));
+  }
+  // `src` é o parâmetro de rastreamento do checkout da Cakto. Levamos o id
+  // do usuário nele porque é o único identificador que NÃO depende do que a
+  // pessoa digita na tela de pagamento — e-mail, CPF e telefone o comprador
+  // pode trocar na hora; este valor não.
+  if (customer.userId) {
+    url.searchParams.set("src", `uid_${customer.userId}`);
+  }
   return url.toString();
+}
+
+/**
+ * Extrai o id do usuário de um valor de rastreamento (`src`/`sck`) gerado
+ * por getCaktoCheckoutUrl. Devolve `undefined` para qualquer coisa que não
+ * siga o formato — inclusive valores de campanha de marketing que o lojista
+ * venha a usar nesses mesmos parâmetros.
+ */
+export function parseUserIdFromTracking(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const match = value.match(/\buid_([a-z0-9]+)\b/i);
+  return match?.[1];
 }
 
 // Cada webhook cadastrado no painel da Cakto é vinculado a um ou mais

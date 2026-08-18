@@ -220,35 +220,84 @@ function TurnoCard({ openSession }: { openSession: OpenSession | null }) {
 
   if (!openSession) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base text-white">
-            <LockOpen className="size-4 text-orange-400" />
-            Abrir turno de caixa
+      // Estado "caixa fechado": além do campo de abertura, explica as três
+      // etapas do turno. Quem nunca usou controle de caixa não sabe o que é
+      // "valor de abertura" nem por que o sistema pede isso antes de vender
+      // — e um campo solitário pedindo um número não responde essa dúvida.
+      <Card className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-28 -right-20 h-56 w-56 rounded-full bg-orange-500/10 blur-[90px]"
+        />
+        <CardHeader className="relative">
+          <CardTitle className="flex items-center gap-2.5 text-base text-white">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/25">
+              <LockOpen className="size-4 text-orange-300" />
+            </span>
+            Abra o turno para começar o dia
           </CardTitle>
-          <CardDescription>
-            Informe o valor inicial (troco) na gaveta para começar o turno.
+          <CardDescription className="pt-1">
+            O caixa acompanha o dinheiro em espécie da sua gaveta — quanto
+            entrou de venda e se bate no fim do expediente.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex flex-1 flex-col gap-1.5">
-            <Label htmlFor="opening-cents">Valor de abertura</Label>
-            <Input
-              id="opening-cents"
-              inputMode="decimal"
-              placeholder="0,00"
-              value={openingValue}
-              onChange={(e) => setOpeningValue(e.target.value)}
-            />
+
+        <CardContent className="relative flex flex-col gap-4">
+          <ol className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+            {[
+              {
+                title: "Informe o troco",
+                body: "O dinheiro que já está na gaveta antes da primeira venda.",
+              },
+              {
+                title: "Venda normalmente",
+                body: "Pedidos pagos em dinheiro entram no caixa sozinhos.",
+              },
+              {
+                title: "Feche e confira",
+                body: "Conte a gaveta e veja se sobrou ou faltou.",
+              },
+            ].map((step, index) => (
+              <li
+                key={step.title}
+                className="flex flex-1 gap-2.5 rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/5"
+              >
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-rose-500 text-[10px] font-bold text-white">
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-white">{step.title}</p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {step.body}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-end">
+            <div className="flex flex-1 flex-col gap-1.5">
+              <Label htmlFor="opening-cents">Valor de abertura (troco)</Label>
+              <Input
+                id="opening-cents"
+                inputMode="decimal"
+                placeholder="0,00"
+                value={openingValue}
+                onChange={(e) => setOpeningValue(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Não tem troco na gaveta? Informe 0,00 e siga.
+              </p>
+            </div>
+            <Button
+              disabled={isPending}
+              className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+              onClick={handleOpen}
+            >
+              <LockOpen className="size-4" />
+              {isPending ? "Abrindo..." : "Abrir caixa"}
+            </Button>
           </div>
-          <Button
-            disabled={isPending}
-            className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
-            onClick={handleOpen}
-          >
-            <LockOpen className="size-4" />
-            {isPending ? "Abrindo..." : "Abrir caixa"}
-          </Button>
         </CardContent>
       </Card>
     );

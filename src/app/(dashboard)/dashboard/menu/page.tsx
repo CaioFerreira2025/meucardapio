@@ -8,6 +8,8 @@ import { CategoryFormDialog } from "@/components/menu/category-form-dialog";
 import { CategoryCard } from "@/components/menu/category-card";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { PageHelp } from "@/components/dashboard/page-help";
 
 export const metadata: Metadata = {
   title: pageTitle("Cardápio"),
@@ -48,7 +50,10 @@ export default async function MenuPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white">Cardápio</h1>
+          <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
+            Cardápio
+            <PageHelp page="menu" />
+          </h1>
           <p className="text-muted-foreground">
             Organize categorias e produtos do seu cardápio digital.
           </p>
@@ -57,15 +62,15 @@ export default async function MenuPage() {
       </div>
 
       {categories.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/20">
-            <UtensilsCrossed className="size-5 text-orange-300" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Nenhuma categoria ainda. Crie a primeira (ex.: &quot;Lanches&quot;) para
-            começar a cadastrar produtos.
-          </p>
-        </div>
+        <EmptyState
+          icon={UtensilsCrossed}
+          title="Seu cardápio começa aqui"
+          description="Categorias são os grupos que o cliente vê ao abrir o cardápio — Entradas, Pratos, Bebidas. Crie a primeira e depois cadastre os produtos dentro dela."
+        >
+          {/* O botão de criar vive num client component (abre modal), então
+              entra como filho em vez de virar link no EmptyState. */}
+          <CategoryFormDialog triggerLabel="Criar primeira categoria" />
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-4">
           {categories.map((category, index) => (

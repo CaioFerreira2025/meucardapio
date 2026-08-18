@@ -7,6 +7,7 @@ import { pageTitle } from "@/config/brand";
 import { CaixaClient } from "@/components/caixa/caixa-client";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
+import { PageHelp } from "@/components/dashboard/page-help";
 
 export const metadata: Metadata = {
   title: pageTitle("Caixa"),
@@ -113,7 +114,10 @@ export default async function CaixaPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">Caixa</h1>
+        <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
+          Caixa
+          <PageHelp page="caixa" />
+        </h1>
         <p className="text-muted-foreground">
           Controle o faturamento do dia e feche o turno com o saldo da
           gaveta.

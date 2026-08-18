@@ -15,9 +15,10 @@ import type { AccessState } from "@/lib/access";
 export function PaywallScreen({ state }: { state: AccessState }) {
   const headline = {
     trial_expired: "Seu teste gratuito de 15 dias terminou",
+    trial_unavailable: "Escolha um plano para começar",
     past_due: "Sua assinatura está com pagamento pendente",
     canceled: "Sua assinatura foi encerrada",
-  }[state.kind as "trial_expired" | "past_due" | "canceled"] ??
+  }[state.kind as "trial_expired" | "trial_unavailable" | "past_due" | "canceled"] ??
     "Escolha um plano para continuar";
 
   return (

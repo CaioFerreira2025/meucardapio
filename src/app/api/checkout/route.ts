@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { getCaktoCheckoutUrl } from "@/lib/cakto";
 import { PLANS } from "@/config/plans";
 
@@ -39,9 +40,20 @@ export async function POST(request: Request) {
     );
   }
 
+  // Documento e telefone vêm do banco (e não da sessão) porque são eles que
+  // o webhook usa para reconhecer a conta caso o pagamento venha com outro
+  // e-mail — ver src/app/api/webhooks/cakto/route.ts.
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { document: true, phone: true },
+  });
+
   const url = getCaktoCheckoutUrl(plan.caktoOfferId, {
     email: session.user.email,
     name: session.user.name,
+    document: user?.document,
+    phone: user?.phone,
+    userId: session.user.id,
   });
 
   return NextResponse.json({ url });

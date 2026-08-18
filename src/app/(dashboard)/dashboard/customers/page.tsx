@@ -16,6 +16,8 @@ import {
 import { CustomerHistoryDialog } from "@/components/customers/customer-history-dialog";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
+import { PageHelp } from "@/components/dashboard/page-help";
+import { EmptyState } from "@/components/dashboard/empty-state";
 
 export const metadata: Metadata = {
   title: pageTitle("Clientes"),
@@ -98,21 +100,22 @@ export default async function CustomersPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">Clientes</h1>
+        <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
+          Clientes
+          <PageHelp page="customers" />
+        </h1>
         <p className="text-muted-foreground">
           Quem já pediu no seu cardápio, quanto gastou e quando voltou.
         </p>
       </div>
 
       {customers.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/20">
-            <Users className="size-5 text-orange-300" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Assim que os primeiros pedidos chegarem, seus clientes aparecem aqui.
-          </p>
-        </div>
+        <EmptyState
+          icon={Users}
+          title="Sua base de clientes se monta sozinha"
+          description="Você não precisa cadastrar ninguém: cada pedido registra automaticamente o nome e o WhatsApp de quem comprou, junto do total gasto e da frequência. É como você vai descobrir quem são seus clientes fiéis."
+          action={{ label: "Divulgar meu cardápio", href: "/dashboard" }}
+        />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border">
           <Table>

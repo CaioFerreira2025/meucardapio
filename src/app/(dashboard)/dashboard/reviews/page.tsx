@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
+import { PageHelp } from "@/components/dashboard/page-help";
+import { EmptyState } from "@/components/dashboard/empty-state";
 
 export const metadata: Metadata = {
   title: pageTitle("Avaliações"),
@@ -67,8 +69,9 @@ export default async function ReviewsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">
+        <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
           Avaliações
+          <PageHelp page="reviews" />
         </h1>
         <p className="text-muted-foreground">
           Veja o que seus clientes acharam da experiência.
@@ -117,15 +120,12 @@ export default async function ReviewsPage() {
       )}
 
       {totalReviews === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400/20 to-rose-500/20 ring-1 ring-orange-500/20">
-            <Star className="size-5 text-orange-300" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Nenhuma avaliação recebida ainda. Assim que um cliente avaliar a
-            experiência pelo cardápio, ela aparece aqui.
-          </p>
-        </div>
+        <EmptyState
+          icon={Star}
+          title="As notas chegam sozinhas"
+          description="Depois que um pedido é marcado como entregue, o cliente recebe o convite para avaliar no próprio celular. As notas e comentários aparecem aqui — e quem avaliar mal ganha um atalho direto para você responder no WhatsApp."
+          action={{ label: "Ver pedidos", href: "/dashboard/orders" }}
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {reviews.map((review) => (

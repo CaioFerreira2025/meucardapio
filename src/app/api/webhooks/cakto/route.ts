@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { isValidCaktoWebhookSecret } from "@/lib/cakto";
+import { isValidCaktoWebhookSecret, parseUserIdFromTracking } from "@/lib/cakto";
+import { onlyDigits, parsePhone } from "@/lib/identity";
 
 // Substitui o antigo /api/webhooks/stripe. A Cakto não assina o payload
 // (sem HMAC/header de assinatura) — a autenticidade vem só do campo
@@ -100,26 +101,79 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true });
 }
 
-async function syncSubscription(eventName: string, status: string, data: unknown) {
-  const emailRaw = pick(pick(data, ["customer"]), ["email"]);
-  const email = typeof emailRaw === "string" ? emailRaw.trim().toLowerCase() : "";
+// Identifica de qual conta é o pagamento, tentando na ordem do mais
+// confiável para o menos.
+//
+// Por que não basta o e-mail: o checkout da Cakto é uma página deles, e o
+// comprador pode digitar QUALQUER e-mail lá — o pessoal costuma usar o
+// e-mail pessoal em vez do que cadastrou no painel. Quando isso acontecia,
+// o webhook não achava a conta, ninguém era liberado, e a ativação virava
+// trabalho manual no WhatsApp. Esta cascata existe para eliminar isso.
+async function findUserForPayment(data: unknown) {
+  // 1. `src`/`sck`: o parâmetro de rastreamento que NÓS colocamos na URL do
+  //    checkout (ver getCaktoCheckoutUrl). É o único que o comprador não
+  //    digita e portanto não erra.
+  const tracking =
+    parseUserIdFromTracking(pick(data, ["src", "sck", "tracking", "utm_source"])) ??
+    parseUserIdFromTracking(pick(pick(data, ["tracking"]), ["src", "sck"])) ??
+    parseUserIdFromTracking(pick(pick(data, ["purchase"]), ["src", "sck", "checkoutUrl"])) ??
+    parseUserIdFromTracking(pick(data, ["checkoutUrl"]));
+  if (tracking) {
+    const byTracking = await prisma.user.findUnique({ where: { id: tracking } });
+    if (byTracking) return { user: byTracking, matchedBy: "rastreamento (src)" };
+  }
 
-  if (!email) {
+  const customer = pick(data, ["customer"]);
+
+  // 2. E-mail — o caminho normal quando a pessoa não troca nada.
+  const emailRaw = pick(customer, ["email"]);
+  const email = typeof emailRaw === "string" ? emailRaw.trim().toLowerCase() : "";
+  if (email) {
+    const byEmail = await prisma.user.findUnique({ where: { email } });
+    if (byEmail) return { user: byEmail, matchedBy: "e-mail" };
+  }
+
+  // 3. CPF/CNPJ — a Cakto exige documento na compra, e nós passamos o do
+  //    cadastro pré-preenchido, então costuma bater.
+  const documentRaw = pick(customer, ["docNumber", "doc_number", "document", "cpf", "cnpj"]);
+  if (typeof documentRaw === "string") {
+    const document = onlyDigits(documentRaw);
+    if (document) {
+      const byDocument = await prisma.user.findUnique({ where: { document } });
+      if (byDocument) return { user: byDocument, matchedBy: "CPF/CNPJ" };
+    }
+  }
+
+  // 4. Telefone — último recurso, normalizado para o mesmo formato do banco.
+  const phoneRaw = pick(customer, ["phone", "phoneNumber", "phone_number", "whatsapp"]);
+  if (typeof phoneRaw === "string") {
+    const parsedPhone = parsePhone(phoneRaw);
+    if (parsedPhone.ok) {
+      const byPhone = await prisma.user.findUnique({ where: { phone: parsedPhone.digits } });
+      if (byPhone) return { user: byPhone, matchedBy: "WhatsApp" };
+    }
+  }
+
+  return { user: null, matchedBy: null, email };
+}
+
+async function syncSubscription(eventName: string, status: string, data: unknown) {
+  const match = await findUserForPayment(data);
+  const user = match.user;
+
+  if (!user) {
     console.error(
-      `[cakto-webhook] evento "${eventName}" sem customer.email — não dá para saber de qual usuário é. Payload:`,
+      `[cakto-webhook] evento "${eventName}": não foi possível identificar a conta por ` +
+        `rastreamento, e-mail, CPF/CNPJ nem telefone. Nenhum acesso foi liberado — ` +
+        `verifique manualmente no painel administrativo. Payload:`,
       JSON.stringify(data)
     );
     return;
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    console.error(
-      `[cakto-webhook] nenhum usuário encontrado para o e-mail "${email}" (evento "${eventName}"). ` +
-        `Confira se o e-mail usado no checkout da Cakto é o mesmo da conta no painel.`
-    );
-    return;
-  }
+  console.log(
+    `[cakto-webhook] evento "${eventName}" associado ao usuário ${user.email} via ${match.matchedBy}.`
+  );
 
   const offerIdRaw =
     pick(pick(data, ["offer"]), ["id"]) ?? pick(pick(data, ["product"]), ["id"]);

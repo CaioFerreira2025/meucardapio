@@ -94,44 +94,69 @@ export function RestaurantSettingsForm({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="phone">Telefone / WhatsApp</Label>
-            <Input
-              id="phone"
-              name="phone"
-              defaultValue={restaurant.phone ?? ""}
-              placeholder="(11) 99999-9999"
-            />
-            {state.fieldErrors?.phone && (
-              <p className="text-xs text-destructive">{state.fieldErrors.phone}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="address">Endereço</Label>
-            <Input
-              id="address"
-              name="address"
-              defaultValue={restaurant.address ?? ""}
-              placeholder="Opcional"
-            />
-            {state.fieldErrors?.address && (
-              <p className="text-xs text-destructive">{state.fieldErrors.address}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
             <Label htmlFor="description">Descrição</Label>
             <Textarea
               id="description"
               name="description"
               defaultValue={restaurant.description ?? ""}
-              placeholder="Uma frase curta sobre o seu restaurante"
+              placeholder="Comida caseira, feita na hora, do jeito que você gosta."
             />
+            <p className="text-xs text-muted-foreground">
+              Uma frase curta, logo abaixo do nome no cardápio. É a primeira
+              impressão de quem escaneia o QR Code na mesa.
+            </p>
             {state.fieldErrors?.description && (
               <p className="text-xs text-destructive">
                 {state.fieldErrors.description}
               </p>
             )}
+          </div>
+
+          {/* Contato em duas colunas no desktop: são campos curtos e, um
+              embaixo do outro numa coluna só, faziam o formulário parecer
+              mais longo do que é — o que atrapalha justamente quem está
+              preenchendo pela primeira vez. */}
+          <div className="flex flex-col gap-1.5 border-t border-border pt-5">
+            <p className="text-sm font-medium text-white">Contato</p>
+            <div className="mt-1 grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="phone">Telefone / WhatsApp</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  defaultValue={restaurant.phone ?? ""}
+                  placeholder="(11) 99999-9999"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Usado para o cliente falar com você pelo cardápio.
+                </p>
+                {state.fieldErrors?.phone && (
+                  <p className="text-xs text-destructive">{state.fieldErrors.phone}</p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="address">
+                  Endereço{" "}
+                  <span className="font-normal text-muted-foreground">(opcional)</span>
+                </Label>
+                <Input
+                  id="address"
+                  name="address"
+                  defaultValue={restaurant.address ?? ""}
+                  placeholder="Rua, número — bairro"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Ajuda quem chega pela primeira vez a te encontrar.
+                </p>
+                {state.fieldErrors?.address && (
+                  <p className="text-xs text-destructive">{state.fieldErrors.address}</p>
+                )}
+              </div>
+            </div>
           </div>
         </CardContent>
         <CardFooter>

@@ -19,7 +19,14 @@ import { createCategory, type FormState } from "@/app/(dashboard)/dashboard/menu
 
 const initialState: FormState = {};
 
-export function CategoryFormDialog() {
+export function CategoryFormDialog({
+  // Rótulo/estilo alternativos para quando o botão é a ação principal de um
+  // estado vazio ("Criar primeira categoria", em destaque) em vez do botão
+  // secundário do topo da página ("Nova categoria").
+  triggerLabel,
+}: {
+  triggerLabel?: string;
+} = {}) {
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(
     createCategory,
@@ -41,10 +48,17 @@ export function CategoryFormDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="sm">
-            <Plus />
-            Nova categoria
-          </Button>
+          triggerLabel ? (
+            <Button className="gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400">
+              <Plus />
+              {triggerLabel}
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm">
+              <Plus />
+              Nova categoria
+            </Button>
+          )
         }
       />
       <DialogContent>

@@ -29,6 +29,7 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -45,6 +46,15 @@ export function RegisterForm() {
 
     if (!response.ok) {
       const data = await response.json().catch(() => null);
+      // A rota devolve `field` junto do erro (CPF já cadastrado, WhatsApp
+      // inválido, etc.). Mostrar a mensagem embaixo do campo certo, e não só
+      // num toast que some, é o que faz a pessoa entender o que corrigir.
+      if (data?.field && ["name", "email", "document", "phone", "password"].includes(data.field)) {
+        setError(data.field as keyof RegisterInput, {
+          type: "server",
+          message: data.error ?? "Valor inválido",
+        });
+      }
       toast.error(data?.error ?? "Não foi possível criar sua conta.");
       setIsSubmitting(false);
       return;
@@ -102,6 +112,35 @@ export function RegisterForm() {
             />
             {errors.email && (
               <p className="text-xs text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="document">CPF ou CNPJ</Label>
+            <Input
+              id="document"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="000.000.000-00"
+              aria-invalid={Boolean(errors.document)}
+              {...register("document")}
+            />
+            {errors.document && (
+              <p className="text-xs text-destructive">{errors.document.message}</p>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="phone">WhatsApp</Label>
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="(11) 99999-9999"
+              aria-invalid={Boolean(errors.phone)}
+              {...register("phone")}
+            />
+            {errors.phone && (
+              <p className="text-xs text-destructive">{errors.phone.message}</p>
             )}
           </div>
           <div className="flex flex-col gap-1.5">

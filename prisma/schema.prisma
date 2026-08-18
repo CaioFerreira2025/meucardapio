@@ -41,6 +41,15 @@ model User {
   // surpresa por causa de um campo que não existia quando ela foi criada.
   trialEndsAt      DateTime?
 
+  // CPF/CNPJ e WhatsApp, só dígitos (ver src/lib/identity.ts). Coletados no
+  // cadastro. Além de servirem de chave do teste único (via TrialClaim
+  // abaixo), são o que permite casar um pagamento da Cakto com a conta certa
+  // quando o cliente paga usando um e-mail diferente do cadastro — ver
+  // src/app/api/webhooks/cakto/route.ts. Opcionais porque contas antigas não
+  // os têm; `@unique` para não existirem duas contas com o mesmo documento.
+  document         String?   @unique
+  phone            String?   @unique
+
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -90,6 +99,35 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// Registro permanente de quem JÁ usou o teste gratuito de 15 dias.
+//
+// Existe separado de `User` por um motivo específico: se a marcação de
+// "já usou o trial" morasse só no usuário, bastaria excluir a conta (ou
+// criar outra com e-mail novo) para ganhar mais 15 dias — que é exatamente
+// o abuso que isto previne. Esta tabela NÃO tem relação com cascade: o
+// registro sobrevive à exclusão do usuário de propósito.
+//
+// `document` e `phone` são chaves únicas independentes: basta um dos dois
+// bater para o novo cadastro não receber teste. Guardados só em dígitos
+// (ver src/lib/identity.ts), senão a mesma pessoa burlaria variando
+// pontuação ou o prefixo +55.
+model TrialClaim {
+  id String @id @default(cuid())
+
+  document String @unique
+  phone    String @unique
+
+  // Conta que originou o registro. Fica apenas como rastro para suporte
+  // ("qual conta usou este CPF?"); intencionalmente SEM relação com `User`,
+  // para que apagar o usuário não apague nem invalide este registro.
+  userId    String?
+  userEmail String?
+
+  claimedAt DateTime @default(now())
+
+  @@map("trial_claims")
 }
 
 // ---------------------------------------------------------------------------

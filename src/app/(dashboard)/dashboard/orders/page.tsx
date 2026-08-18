@@ -10,6 +10,9 @@ import { BillRequestsAlert } from "@/components/tables/bill-requests-alert";
 import { ArchivedOrdersSection } from "@/components/orders/archived-orders-section";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
+import { PageHelp } from "@/components/dashboard/page-help";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { ClipboardList } from "lucide-react";
 
 export const metadata: Metadata = {
   title: pageTitle("Pedidos"),
@@ -55,8 +58,9 @@ export default async function OrdersPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">
+        <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
           Central de pedidos
+          <PageHelp page="orders" />
         </h1>
         <p className="text-muted-foreground">
           Acompanhe cada pedido do recebimento até a entrega.
@@ -67,6 +71,18 @@ export default async function OrdersPage() {
 
       <BillRequestsAlert tables={tablesAwaitingBill} />
 
+      {orders.length === 0 ? (
+        // Diferente das colunas vazias (que só dizem "nenhum pedido"), este
+        // estado aparece quando NUNCA houve pedido: aí a dúvida do lojista
+        // não é "cadê os pedidos", é "isso aqui funciona?".
+        <EmptyState
+          icon={ClipboardList}
+          title="Os pedidos aparecem aqui, em tempo real"
+          description="Assim que um cliente escanear o QR Code e finalizar um pedido, ele surge nesta tela automaticamente — sem precisar atualizar a página. Cada pedido caminha por Recebido, Em preparo, Pronto e Entregue."
+          action={{ label: "Divulgar meu cardápio", href: "/dashboard" }}
+          secondaryAction={{ label: "Lançar pedido na comanda", href: "/dashboard/comanda" }}
+        />
+      ) : (
       <div className="grid gap-6 lg:grid-cols-4">
         <OrderColumn
           title="Recebidos"
@@ -97,6 +113,7 @@ export default async function OrdersPage() {
           emptyLabel="Nenhuma entrega ainda."
         />
       </div>
+      )}
 
       {cancelled.length > 0 && (
         <section className="flex flex-col gap-3 border-t border-white/10 pt-6">

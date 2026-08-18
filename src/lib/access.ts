@@ -33,6 +33,7 @@ export type AccessState = {
     | "subscribed" // assinatura ativa e paga
     | "trial" // dentro dos 15 dias de teste
     | "trial_expired" // teste acabou e nunca assinou
+    | "trial_unavailable" // CPF/CNPJ ou WhatsApp já tinha usado o teste antes
     | "past_due" // assinatura existiu mas o pagamento falhou/pausou
     | "canceled"; // assinatura cancelada e período já encerrado
   // Data em que o acesso atual expira (fim do trial ou do período pago).
@@ -161,9 +162,17 @@ export const getAccessState = cache(async (): Promise<AccessState> => {
     };
   }
 
+  // Conta que nasceu já sem teste (CPF/CNPJ ou WhatsApp já tinham usado os
+  // 15 dias — ver src/app/api/register/route.ts) recebe `trialEndsAt`
+  // anterior ao próprio `createdAt`. Esse detalhe é o que diferencia "seu
+  // teste acabou" de "este CPF já usou o teste": sem ele, quem nunca teve
+  // teste leria uma mensagem sobre um período que não existiu, e ia achar
+  // que era bug.
+  const neverHadTrial = trialEnd < user.createdAt;
+
   return {
     hasFullAccess: false,
-    kind: "trial_expired",
+    kind: neverHadTrial ? "trial_unavailable" : "trial_expired",
     endsAt: null,
     daysLeft: 0,
     endingSoon: false,

@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CancelSubscriptionButton } from "@/components/billing/cancel-subscription-button";
+import { PageHelp } from "@/components/dashboard/page-help";
 
 export const metadata: Metadata = {
   title: pageTitle("Cobrança"),
@@ -59,8 +60,9 @@ export default async function BillingPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">
+        <h1 className="flex items-center gap-1 text-2xl font-semibold tracking-tight text-white">
           Cobrança
+          <PageHelp page="billing" />
         </h1>
         <p className="text-muted-foreground">
           Veja o status da sua assinatura e gerencie o método de pagamento.
