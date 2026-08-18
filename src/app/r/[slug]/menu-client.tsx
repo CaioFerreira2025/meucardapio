@@ -669,19 +669,32 @@ export function MenuClient({
               </div>
             </div>
 
-            <div className="mt-auto flex flex-col gap-2 border-t border-border p-4">
-              <div className="flex items-center justify-between text-sm font-medium">
-                <span className="text-muted-foreground">Total</span>
-                <span className="text-lg font-semibold text-orange-300">
-                  {formatCents(totalCents)}
-                </span>
-              </div>
+            {/* Rodapé de UMA linha só: o total mora DENTRO do botão, em vez
+                de numa faixa "Total ————— R$ X" separada acima dele. Com o
+                teclado aberto no celular cada linha do rodapé é espaço que
+                falta no formulário — juntar as duas devolve ~40px (quase
+                meio campo) sem esconder o valor do cliente, que continua
+                vendo quanto vai pagar antes de confirmar. Mesmo padrão dos
+                apps de delivery. */}
+            <div className="mt-auto border-t border-border p-4">
               <Button
-                className="w-full gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
+                className="h-12 w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-600/20 hover:from-orange-400 hover:to-rose-400"
                 disabled={isSubmitting || !isOpen}
                 onClick={handleCheckout}
               >
-                {isSubmitting ? "Enviando..." : "Enviar pedido"}
+                {isSubmitting ? (
+                  "Enviando..."
+                ) : (
+                  <span className="flex items-center gap-2 text-base font-semibold">
+                    Enviar pedido
+                    {/* Ponto separador puramente decorativo — escondido de
+                        leitores de tela, que já leem "Enviar pedido R$ X". */}
+                    <span aria-hidden className="opacity-60">
+                      ·
+                    </span>
+                    {formatCents(totalCents)}
+                  </span>
+                )}
               </Button>
             </div>
           </SheetContent>
