@@ -270,7 +270,7 @@ export function DashboardShell({
         )}
       >
         <Link href="/dashboard">
-          <Logo size="sm" />
+          <Logo size="mobile" />
         </Link>
         <div className="flex items-center gap-1">
           {isAdmin && (
@@ -296,6 +296,21 @@ export function DashboardShell({
               {initials(user.name, user.email)}
             </AvatarFallback>
           </Avatar>
+          {/* Sair da conta. No celular NÃO existia nenhuma forma de deslogar:
+              o botão de sair morava só no rodapé da barra lateral, que é
+              `hidden md:flex` — ou seja, some no celular — e o avatar aqui do
+              topo era puramente decorativo, sem ação nenhuma. Quem entrava
+              pelo celular ficava preso na conta. O alvo de toque tem 40px
+              (p-2.5 + ícone de 20px) para não errar o clique no dedo. */}
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="rounded-md p-2.5 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
+            aria-label="Sair da conta"
+            title="Sair da conta"
+          >
+            <LogOut className="size-5" />
+          </button>
         </div>
       </header>
 

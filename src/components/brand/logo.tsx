@@ -65,7 +65,13 @@ export function LogoMark({
 // `sm` também é usado no rodapé da landing e nas telas de login/cadastro, e
 // o pedido aqui foi para dar destaque à marca DENTRO do painel, sem mexer
 // no layout/design do site.
-type LogoSize = "sm" | "md" | "lg" | "xl";
+// `mobile` é o lockup das barras superiores de celular (cabeçalho da landing
+// e topo do painel). Ele existe porque nessas barras a largura é disputada
+// com botões, e a saída não é encolher o lobo: o lettering "GREYPACK" é que
+// é largo (proporção 8:1), então trocar 2px de altura de letra por 12px de
+// símbolo deixa o lobo 50% maior e o conjunto até 4px MAIS ESTREITO que
+// antes — cabe melhor e o lobo aparece.
+type LogoSize = "sm" | "mobile" | "md" | "lg" | "xl";
 
 // O wordmark deixou de ser texto ("Meu Restaurante" numa fonte do sistema)
 // e passou a ser a arte do logotipo GreyPack (public/wordmark.png) —
@@ -85,6 +91,9 @@ type LogoSize = "sm" | "md" | "lg" | "xl";
 // sm ≈129px de largura, md ≈162px, lg ≈226px, xl ≈145px.
 const WORDMARK_HEIGHT: Record<LogoSize, string> = {
   sm: "h-4",
+  // 14px de altura ≈ 113px de largura. Com o símbolo de 36px e 8px de
+  // espaço, o lockup fecha em 157px — contra 161px do `sm` que estava aqui.
+  mobile: "h-3.5",
   md: "h-5",
   lg: "h-7",
   // xl vive na barra lateral do painel (largura útil de 224px): 48px de
@@ -133,6 +142,9 @@ export function LogoWordmark({
 // (h-14 = 56px), onde um símbolo grande não caberia.
 const MARK_SIZE: Record<LogoSize, string> = {
   sm: "size-6",
+  // 36px: cabe com folga nas barras de 56px de altura do celular e é 50%
+  // maior que os 24px que o celular usava antes.
+  mobile: "size-9",
   md: "size-11",
   lg: "size-9",
   xl: "size-12",
