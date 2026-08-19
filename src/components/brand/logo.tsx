@@ -31,7 +31,7 @@ import { BRAND_NAME } from "@/config/brand";
 // detalhe que compressão mais agressiva borra primeiro.
 export function LogoMark({
   className,
-  sizes = "128px",
+  sizes = "256px",
 }: {
   className?: string;
   sizes?: string;
@@ -50,25 +50,41 @@ export function LogoMark({
   );
 }
 
-// Medido direto na referência da Cakto que o usuário mandou: o ícone deles
-// tem ~38px de altura contra ~34px da altura das letras de "cakto" — ícone
-// e texto praticamente do mesmo tamanho (proporção ~1:1). Antes daqui o
-// nosso ficava ~2:1 (ícone quase o dobro do texto), por isso destoava. Os
-// tamanhos abaixo (junto com MARK_SIZE) fecham essa proporção pra ~1.2–1.5:1
-// — não dá pra chegar em 1:1 exato porque o ícone deles é um glifo chapado
-// de 2 cores (lê bem em qualquer tamanho); o nosso é uma ilustração
-// detalhada do lobo, que perde legibilidade se encolher demais.
-const WORDMARK_TEXT_SIZE: Record<"sm" | "md" | "lg", string> = {
+// Depois de comparar com a referência da Cakto num tamanho de renderização
+// real (não só a proporção interna ícone:texto), o problema não era só a
+// razão entre os dois — era que ambos estavam pequenos demais em termos
+// absolutos. A tentativa anterior encolheu o ícone pra fechar a proporção
+// e isso piorou a queixa do usuário ("o símbolo continua pequeno"). Agora:
+// os dois tamanhos sobem juntos, com o ícone sempre maior que o texto (o
+// usuário pediu explicitamente "o símbolo maior do lobo"), já que a
+// ilustração detalhada do lobo (ao contrário do glifo chapado da Cakto)
+// perde legibilidade se ficar pequena.
+//
+// `xl` é o tamanho do cabeçalho de marca das barras laterais do painel e do
+// painel administrativo (ver dashboard-shell.tsx e admin-shell.tsx). Ele
+// existe separado de propósito, em vez de simplesmente aumentar o `sm`: o
+// `sm` também é usado no rodapé da landing e nas telas de login/cadastro, e
+// o pedido aqui foi para dar destaque à marca DENTRO do painel, sem mexer
+// no layout/design do site.
+type LogoSize = "sm" | "md" | "lg" | "xl";
+
+// sm/md/lg estão EXATAMENTE como já estão em produção e não devem ser
+// alterados: eles servem o cabeçalho e o rodapé da landing, as telas de
+// login/cadastro e a barra superior do celular. Mexer neles mudaria o
+// layout do site, que é justamente o que não se quer aqui. Só o `xl`
+// abaixo é novo, e ele é usado apenas nas barras laterais do painel.
+const WORDMARK_TEXT_SIZE: Record<LogoSize, string> = {
   sm: "text-base",
   md: "text-xl",
   lg: "text-3xl",
+  xl: "text-xl",
 };
 
 export function LogoWordmark({
   size = "md",
   className,
 }: {
-  size?: "sm" | "md" | "lg";
+  size?: LogoSize;
   className?: string;
 }) {
   return (
@@ -87,10 +103,13 @@ export function LogoWordmark({
   );
 }
 
-const MARK_SIZE: Record<"sm" | "md" | "lg", string> = {
+// Mesma regra do WORDMARK_TEXT_SIZE acima: sm/md/lg intocados (são os do
+// site), `xl` é o único novo e vive só no painel.
+const MARK_SIZE: Record<LogoSize, string> = {
   sm: "size-6",
   md: "size-7",
   lg: "size-9",
+  xl: "size-12",
 };
 
 // Lockup completo (símbolo + wordmark) usado em cabeçalhos e sidebars.
@@ -101,7 +120,7 @@ export function Logo({
   markOnly = false,
   className,
 }: {
-  size?: "sm" | "md" | "lg";
+  size?: LogoSize;
   markOnly?: boolean;
   className?: string;
 }) {
@@ -110,7 +129,17 @@ export function Logo({
   }
 
   return (
-    <span className={cn("flex items-center gap-2", className)}>
+    <span
+      className={cn(
+        "flex items-center",
+        // No `xl` (cabeçalho das barras laterais) o respiro entre símbolo e
+        // nome é maior: com o símbolo a 48px, o gap de 8px do padrão fazia
+        // os dois "colarem" e o conjunto lia como um bloco só, em vez de
+        // símbolo + nome.
+        size === "xl" ? "gap-2.5" : "gap-2",
+        className
+      )}
+    >
       <LogoMark className={MARK_SIZE[size]} />
       <LogoWordmark size={size} />
     </span>

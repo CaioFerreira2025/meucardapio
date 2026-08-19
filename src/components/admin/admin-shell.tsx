@@ -47,10 +47,12 @@ export function AdminShell({
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:px-6">
-        <div className="flex items-center gap-3">
+      {/* h-20 (era h-16) pelo mesmo motivo da barra lateral do painel: o
+          símbolo passou para 48px e precisava de altura para respirar. */}
+      <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:px-6">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link href="/admin">
-            <Logo size="sm" />
+            <Logo size="xl" />
           </Link>
           <span className="hidden items-center gap-1.5 rounded-full bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-300 ring-1 ring-violet-500/25 sm:flex">
             <ShieldCheck className="size-3.5" />

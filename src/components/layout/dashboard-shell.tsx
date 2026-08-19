@@ -174,15 +174,24 @@ export function DashboardShell({
       {/* Sidebar — desktop */}
       <aside
         className={cn(
-          "fixed left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar/80 backdrop-blur-xl md:flex",
+          // w-64 (era w-60): o cabeçalho de marca agora usa o símbolo a 48px
+          // + "Meu Restaurante" a 20px, e nos 240px antigos esse conjunto
+          // encostava na borda direita da barra. Os 16px extras dão o
+          // respiro necessário sem apertar os itens de navegação.
+          "fixed left-0 z-40 hidden w-64 flex-col border-r border-border bg-sidebar/80 backdrop-blur-xl md:flex",
           isImpersonating ? "top-10 bottom-0" : "inset-y-0"
         )}
       >
+        {/* Cabeçalho de marca da barra lateral. h-20 (era h-16) porque o
+            símbolo passou de 36px para 48px: mantendo 64px de altura, a
+            marca ficava colada nas bordas de cima e de baixo, sem o
+            enquadramento que faz ela ler como um cabeçalho de marca e não
+            como só mais um item da lista. */}
         <Link
           href="/dashboard"
-          className="flex h-16 shrink-0 items-center border-b border-border px-5"
+          className="flex h-20 shrink-0 items-center border-b border-border px-4"
         >
-          <Logo size="sm" />
+          <Logo size="xl" />
         </Link>
 
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
@@ -291,7 +300,7 @@ export function DashboardShell({
       </header>
 
       {/* Conteúdo */}
-      <div className="relative flex min-h-screen flex-col md:pl-60">
+      <div className="relative flex min-h-screen flex-col md:pl-64">
         <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8">
           {children}
         </main>
