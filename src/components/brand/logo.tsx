@@ -118,11 +118,22 @@ export function LogoWordmark({
   );
 }
 
-// Mesma regra do WORDMARK_TEXT_SIZE acima: sm/md/lg intocados (são os do
-// site), `xl` é o único novo e vive só no painel.
+// A proporção que importa aqui é símbolo ÷ altura do lettering, e ela vinha
+// muito diferente entre o painel e as páginas públicas: no `xl` da barra
+// lateral dava 48÷18 ≈ 2,7, enquanto no `md` do site dava 28÷20 = 1,4. Como
+// o lettering "GREYPACK" é largo (8:1), com um símbolo de 28px o lobo
+// simplesmente sumia ao lado das letras — é exatamente a diferença que
+// aparece comparando o cabeçalho do site com a barra lateral do painel.
+//
+// `md` sobe de 28px para 44px de símbolo, mantendo o lettering nos mesmos
+// 20px — só o lobo cresce, que era exatamente o pedido. 44px é o teto para
+// esta faixa: o cabeçalho da landing tem 64px de altura e continua com essa
+// altura, então acima de 44px o símbolo encostaria nas bordas. `sm` fica
+// como está: ele serve o rodapé da landing e a barra superior do celular
+// (h-14 = 56px), onde um símbolo grande não caberia.
 const MARK_SIZE: Record<LogoSize, string> = {
   sm: "size-6",
-  md: "size-7",
+  md: "size-11",
   lg: "size-9",
   xl: "size-12",
 };

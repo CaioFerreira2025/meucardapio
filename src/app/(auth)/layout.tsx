@@ -18,9 +18,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-rose-600/[0.07] blur-[120px]" />
       </div>
 
-      <header className="relative flex h-14 items-center px-4 sm:px-6">
+      {/* Mesmo lockup do cabeçalho da landing (`md`, símbolo de 44px) em vez
+          do `sm` de 24px que estava aqui: login e página principal são as
+          duas telas públicas da marca e não faz sentido a marca aparecer com
+          metade do tamanho em uma delas. A faixa sobe de h-14 para h-16 —
+          o mínimo para o símbolo de 44px não encostar nas bordas. */}
+      <header className="relative flex h-16 items-center px-4 sm:px-6">
         <Link href="/">
-          <Logo size="sm" />
+          <Logo size="md" />
         </Link>
       </header>
       {/* A faixa institucional entra ABAIXO do formulário, nunca acima: quem

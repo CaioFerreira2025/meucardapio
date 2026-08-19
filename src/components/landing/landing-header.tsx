@@ -14,8 +14,15 @@ export function LandingHeader({ isAuthenticated }: { isAuthenticated: boolean })
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-background/70 backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+        {/* Dois tamanhos por breakpoint, e não um só: com o símbolo maior o
+            lockup inteiro passa de 210px, e numa tela de 390px isso encostava
+            no botão "Entrar" — o nome da marca e o botão ficavam colados, sem
+            respiro nenhum. Abaixo de 640px o cabeçalho usa o lockup compacto
+            (símbolo de 24px), que é o que cabe ao lado dos dois botões; de
+            640px para cima entra o lockup com o lobo grande. */}
         <Link href="/">
-          <Logo />
+          <Logo size="sm" className="sm:hidden" />
+          <Logo size="md" className="hidden sm:flex" />
         </Link>
 
         {isAuthenticated ? (
