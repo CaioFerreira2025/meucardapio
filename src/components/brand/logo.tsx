@@ -50,10 +50,18 @@ export function LogoMark({
   );
 }
 
+// Medido direto na referência da Cakto que o usuário mandou: o ícone deles
+// tem ~38px de altura contra ~34px da altura das letras de "cakto" — ícone
+// e texto praticamente do mesmo tamanho (proporção ~1:1). Antes daqui o
+// nosso ficava ~2:1 (ícone quase o dobro do texto), por isso destoava. Os
+// tamanhos abaixo (junto com MARK_SIZE) fecham essa proporção pra ~1.2–1.5:1
+// — não dá pra chegar em 1:1 exato porque o ícone deles é um glifo chapado
+// de 2 cores (lê bem em qualquer tamanho); o nosso é uma ilustração
+// detalhada do lobo, que perde legibilidade se encolher demais.
 const WORDMARK_TEXT_SIZE: Record<"sm" | "md" | "lg", string> = {
-  sm: "text-sm",
-  md: "text-lg",
-  lg: "text-2xl",
+  sm: "text-base",
+  md: "text-xl",
+  lg: "text-3xl",
 };
 
 export function LogoWordmark({
@@ -80,9 +88,9 @@ export function LogoWordmark({
 }
 
 const MARK_SIZE: Record<"sm" | "md" | "lg", string> = {
-  sm: "size-7",
-  md: "size-8",
-  lg: "size-10",
+  sm: "size-6",
+  md: "size-7",
+  lg: "size-9",
 };
 
 // Lockup completo (símbolo + wordmark) usado em cabeçalhos e sidebars.
