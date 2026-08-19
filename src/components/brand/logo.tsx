@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
-import { BRAND_NAME } from "@/config/brand";
 
 // Símbolo da marca: o lobo da GreyPack (public/favicon.png — mesmo arquivo
 // usado como favicon, ver metadata.icons em src/app/layout.tsx). Antes era
@@ -68,16 +67,30 @@ export function LogoMark({
 // no layout/design do site.
 type LogoSize = "sm" | "md" | "lg" | "xl";
 
-// sm/md/lg estão EXATAMENTE como já estão em produção e não devem ser
-// alterados: eles servem o cabeçalho e o rodapé da landing, as telas de
-// login/cadastro e a barra superior do celular. Mexer neles mudaria o
-// layout do site, que é justamente o que não se quer aqui. Só o `xl`
-// abaixo é novo, e ele é usado apenas nas barras laterais do painel.
-const WORDMARK_TEXT_SIZE: Record<LogoSize, string> = {
-  sm: "text-base",
-  md: "text-xl",
-  lg: "text-3xl",
-  xl: "text-xl",
+// O wordmark deixou de ser texto ("Meu Restaurante" numa fonte do sistema)
+// e passou a ser a arte do logotipo GreyPack (public/wordmark.png) —
+// lettering próprio, com o degradê metálico em "GREY" e o verde da marca em
+// "PACK", que nenhuma font-family conseguiria reproduzir.
+//
+// A arte foi recortada com fundo transparente a partir do PNG enviado: o
+// canvas preto original virou alfa (máscara por luminância), as manchas
+// soltas do fundo foram removidas e a imagem foi cortada na caixa exata do
+// lettering. Assim ela assenta em qualquer fundo — escuro (painel, landing,
+// login) ou claro — sem moldura nem halo.
+//
+// Como é imagem e não texto, o controle de tamanho é a ALTURA (a largura
+// acompanha sozinha via `w-auto`, preservando a proporção de 8.08:1 do
+// arquivo). Os valores abaixo dão a mesma presença visual que os tamanhos
+// de fonte que existiam antes, para não mexer no layout de nenhuma tela:
+// sm ≈129px de largura, md ≈162px, lg ≈226px, xl ≈145px.
+const WORDMARK_HEIGHT: Record<LogoSize, string> = {
+  sm: "h-4",
+  md: "h-5",
+  lg: "h-7",
+  // xl vive na barra lateral do painel (largura útil de 224px): 48px de
+  // símbolo + 10px de espaço + 145px de lettering = 203px, com folga até a
+  // borda. Subir para h-5 (162px) encostaria na margem direita.
+  xl: "h-[18px]",
 };
 
 export function LogoWordmark({
@@ -88,18 +101,20 @@ export function LogoWordmark({
   className?: string;
 }) {
   return (
-    // Token semântico (não cor fixa) — assim o mesmo componente funciona
-    // tanto em fundo claro (login/cadastro) quanto escuro (painel, cardápio
-    // público, landing, planos), sempre com contraste correto em cada um.
-    <span
-      className={cn(
-        "font-semibold tracking-tight whitespace-nowrap text-foreground",
-        WORDMARK_TEXT_SIZE[size],
-        className
-      )}
-    >
-      {BRAND_NAME}
-    </span>
+    <Image
+      src="/wordmark.png"
+      // O alt descreve o que a imagem mostra (o logotipo), não o nome
+      // interno da plataforma — é isso que um leitor de tela deve anunciar.
+      alt="GreyPack"
+      width={622}
+      height={77}
+      quality={90}
+      // Pede sempre a arte perto do tamanho nativo (622px): o lettering tem
+      // contorno fino e degradê, e é exibido no máximo a ~226px, o que em
+      // tela de 3x dá 678px. Servir menos que isso serrilharia as bordas.
+      sizes="640px"
+      className={cn("w-auto shrink-0", WORDMARK_HEIGHT[size], className)}
+    />
   );
 }
 
