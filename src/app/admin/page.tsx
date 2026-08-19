@@ -6,6 +6,7 @@ import { getPlanByOfferId, formatCycleLabel } from "@/config/plans";
 import { formatCents } from "@/lib/currency";
 import { pageTitle } from "@/config/brand";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { BrandBanner } from "@/components/brand/brand-banner";
 import { SubscribersTable } from "@/components/admin/subscribers-table";
 import { RestaurantModules } from "@/components/admin/restaurant-modules";
 import { MODULES } from "@/modules/registry";
@@ -75,6 +76,10 @@ export default async function AdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Mesma faixa institucional do painel do lojista, no topo do
+          conteúdo — aqui não existe aviso de assinatura acima dela. */}
+      <BrandBanner />
+
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-white">
           Painel Administrativo

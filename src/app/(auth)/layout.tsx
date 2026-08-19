@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
+import { BrandBanner } from "@/components/brand/brand-banner";
 
 // Mesma identidade dark do resto do produto (Landing Page, painel,
 // cardápio público — ver .dark em globals.css): fundo #0a0c0b, facho de
@@ -22,8 +23,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Logo size="sm" />
         </Link>
       </header>
-      <main className="relative flex flex-1 items-center justify-center px-4 pb-16">
+      {/* A faixa institucional entra ABAIXO do formulário, nunca acima: quem
+          chega aqui veio para entrar na conta, e empurrar o campo de e-mail
+          para baixo da dobra por causa de uma peça de divulgação trocaria a
+          tarefa principal por publicidade. `max-w-3xl` alinha a largura dela
+          com a do Card de login em vez de esticar de ponta a ponta. */}
+      <main className="relative flex flex-1 flex-col items-center justify-center gap-10 px-4 pb-16">
         {children}
+        <BrandBanner className="w-full max-w-3xl" />
       </main>
     </div>
   );

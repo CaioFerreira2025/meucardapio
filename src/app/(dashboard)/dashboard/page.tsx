@@ -33,6 +33,7 @@ import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { QrCodeCard } from "@/components/dashboard/qr-code-card";
 import { BillRequestsAlert } from "@/components/tables/bill-requests-alert";
 import { SubscriptionBanner } from "@/components/billing/subscription-banner";
+import { BrandBanner } from "@/components/brand/brand-banner";
 import { PaywallScreen } from "@/components/billing/paywall-screen";
 import { getAccessState } from "@/lib/access";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
@@ -156,6 +157,11 @@ export default async function DashboardPage() {
           lojista vê ao abrir o painel. Discreto quando está tudo em dia,
           chamativo só quando exige ação. */}
       <SubscriptionBanner state={access} />
+
+      {/* Faixa institucional da GreyPack, logo abaixo do aviso de teste
+          gratuito — é o primeiro bloco visual do painel depois do status da
+          assinatura. */}
+      <BrandBanner />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
