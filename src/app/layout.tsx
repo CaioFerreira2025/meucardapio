@@ -18,6 +18,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: `${BRAND_NAME} — Cardápio digital para restaurantes`,
   description: BRAND_TAGLINE,
+  // Ícone da marca (logo do lobo, ver src/components/brand/logo.tsx para o
+  // mesmo arquivo usado na interface). Configurado explicitamente aqui em
+  // vez de depender da convenção de arquivo do Next (`app/icon.*`) porque
+  // precisamos de tamanhos diferentes para cada contexto: `.ico` multi-
+  // resolução para a aba do navegador (compatibilidade com navegadores
+  // antigos/Windows), PNG em alta resolução como ícone "any" para
+  // navegadores modernos, e um tamanho dedicado de 180×180 para quando o
+  // usuário adiciona o site à tela inicial do iPhone/iPad (Apple ignora o
+  // favicon comum e exige esse tamanho específico).
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 // Sem esse bloco, o Next.js emite só o viewport padrão

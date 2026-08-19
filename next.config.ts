@@ -42,6 +42,16 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
+    // A partir do Next 16, `images.qualities` default mudou para `[75]` —
+    // qualquer `quality` pedido fora dessa lista é silenciosamente
+    // arredondado pro valor permitido mais próximo (nenhum erro, nenhum
+    // aviso). O logo do lobo (public/favicon.png, ver
+    // src/components/brand/logo.tsx) usa `quality={90}` de propósito — tem
+    // linhas finas de circuito sobre fundo quase preto, exatamente o tipo
+    // de detalhe que a compressão padrão (75) borra primeiro — e sem essa
+    // entrada aqui esse `quality={90}` era ignorado e caía pra 75 sem
+    // ninguém perceber.
+    qualities: [75, 90, 100],
   },
 };
 

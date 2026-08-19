@@ -1,50 +1,52 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 import { BRAND_NAME } from "@/config/brand";
 
-// Símbolo da marca: não é um garfo/faca genérico — é um "ponto de conexão"
-// (anel + ponto), lembrando ao mesmo tempo um marcador de QR Code sendo
-// lido. Um único glifo abstrato, simples o bastante pra continuar legível
-// em 16px (favicon) e em 40px (sidebar do painel).
-export function LogoMark({ className }: { className?: string }) {
+// Símbolo da marca: o lobo da GreyPack (public/favicon.png — mesmo arquivo
+// usado como favicon, ver metadata.icons em src/app/layout.tsx). Antes era
+// um glifo SVG geométrico (anel + ponto); trocado para essa ilustração
+// raster fornecida pelo usuário.
+//
+// `fill` + `object-contain` em vez de width/height fixos: assim o mesmo
+// componente serve tanto o ícone de 28px do header quanto a marca d'água
+// gigante de 38rem no fundo do hero (ver hero-section.tsx) sem distorcer —
+// quem controla o tamanho final é a classe `size-*` recebida em
+// `className`, aplicada no `span` relativo que envolve a imagem (`fill`
+// exige um ancestral com `position: relative`).
+//
+// `sizes` PRECISA refletir o tamanho real de cada uso — é ele que diz ao
+// navegador qual imagem baixar do srcset gerado pelo Next. Um valor fixo
+// aqui (ex.: sempre 192px) funciona bem pros ícones pequenos, mas fica
+// pequeno demais pra marca d'água de 608px do hero: o navegador baixa uma
+// versão de baixa resolução e estica pra caber no espaço, o que É a causa
+// do serrilhado — não falta de resolução no arquivo-fonte (que está em
+// 1024×1024), e `image-rendering` não resolveria isso porque essa
+// propriedade afeta ampliação intencional de pixel art, não teria efeito
+// aqui. Por isso `sizes` agora é uma prop, com um padrão generoso o
+// bastante pros ícones de header/sidebar/avatar (até 40px, cobrindo telas
+// de até 3x de densidade), e o hero passa o valor real do seu próprio
+// tamanho. `quality={90}` (o padrão do Next é 75) porque a ilustração tem
+// linhas finas de circuito sobre fundo quase preto — exatamente o tipo de
+// detalhe que compressão mais agressiva borra primeiro.
+export function LogoMark({
+  className,
+  sizes = "128px",
+}: {
+  className?: string;
+  sizes?: string;
+}) {
   return (
-    <svg
-      viewBox="0 0 32 32"
-      className={cn("size-8", className)}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-hidden
-    >
-      <rect width="32" height="32" rx="9" fill="url(#logo-mark-gradient)" />
-      <circle
-        cx="13.5"
-        cy="13.5"
-        r="6.5"
-        stroke="white"
-        strokeOpacity="0.92"
-        strokeWidth="2.25"
+    <span className={cn("relative inline-block size-8 shrink-0", className)}>
+      <Image
+        src="/favicon.png"
+        alt=""
+        fill
+        sizes={sizes}
+        quality={90}
+        className="object-contain"
       />
-      <circle cx="21.5" cy="21.5" r="3.4" fill="white" />
-      <defs>
-        <linearGradient
-          id="logo-mark-gradient"
-          x1="0"
-          y1="0"
-          x2="32"
-          y2="32"
-          gradientUnits="userSpaceOnUse"
-        >
-          {/* Verde esmeralda da marca — mesmos valores de `brand-500` e
-              `brand-700` em globals.css. Aqui a cor é literal, e não
-              `var(--color-brand-*)`, de propósito: este SVG também é usado
-              como favicon (src/app/icon.svg), e favicon é renderizado fora
-              do documento, onde variáveis CSS não existem. Se mudar a
-              escala da marca, mude estes dois valores junto. */}
-          <stop stopColor="#1a7f52" />
-          <stop offset="1" stopColor="#0f5132" />
-        </linearGradient>
-      </defs>
-    </svg>
+    </span>
   );
 }
 

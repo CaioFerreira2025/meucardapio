@@ -49,19 +49,23 @@ export function HeroSection() {
       <div aria-hidden className="light-spot pointer-events-none absolute inset-0" />
       <div aria-hidden className="vignette pointer-events-none absolute inset-0" />
 
-      {/* Marca d'água: símbolo gigante e quase invisível atrás do headline.
-          `hidden lg:block` — no celular ela ATRAPALHAVA em vez de decorar.
-          O símbolo é um anel e um ponto; a 38rem numa tela de 390px, o anel
-          fica maior que a largura do aparelho e o que sobra atrás do texto
-          são dois arcos cinzentos cortados, que ninguém reconhece como
-          logo — leem como manchas circulares fora de lugar. Marca d'água só
-          funciona quando cabe inteira e é reconhecível, o que a partir de
-          `lg` acontece. */}
+      {/* Marca d'água: o lobo da GreyPack, gigante e quase invisível atrás
+          do headline. `hidden lg:block` — no celular ela ATRAPALHAVA em vez
+          de decorar: a 38rem numa tela de 390px, a ilustração fica maior
+          que a largura do aparelho e o que sobra atrás do texto é um
+          recorte irreconhecível. Marca d'água só funciona quando cabe
+          inteira, o que a partir de `lg` acontece.
+
+          `sizes="608px"` é o ÚNICO lugar do site onde o LogoMark não usa o
+          padrão de 128px do componente (ver logo.tsx) — aqui ele realmente
+          é exibido a 38rem (608px), então precisa pedir a imagem nesse
+          tamanho, senão o navegador busca a versão pequena de ícone e
+          estica ela pra caber no espaço gigante, o que serrilha. */}
       <div
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 opacity-[0.04] lg:block"
       >
-        <LogoMark className="size-[38rem]" />
+        <LogoMark className="size-[38rem]" sizes="608px" />
       </div>
 
       {/* fragmentos de UI do produto flutuando ao redor do headline — QR
