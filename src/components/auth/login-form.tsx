@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
@@ -33,7 +33,6 @@ const forgotPasswordWhatsAppUrl = `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text
 )}`;
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,16 +51,31 @@ export function LoginForm() {
       password: values.password,
       redirect: false,
     });
-    setIsSubmitting(false);
 
     if (result?.error) {
+      setIsSubmitting(false);
       toast.error("Email ou senha incorretos.");
       return;
     }
 
+    // Causa real do "precisa clicar duas vezes": `router.push` faz uma
+    // navegação client-side (soft navigation) que pode reaproveitar o
+    // Router Cache do Next.js — inclusive um redirecionamento para /login
+    // cacheado de uma visita ANTERIOR ao /dashboard feita deslogado (ex.:
+    // o próprio callbackUrl que trouxe a pessoa para esta tela). Como
+    // `(dashboard)/layout.tsx` decide se redireciona para /login checando
+    // a sessão no servidor a cada acesso, o primeiro clique já autentica
+    // de verdade (o cookie de sessão é gravado antes do `await` acima
+    // terminar), mas a navegação seguinte podia reaproveitar aquele
+    // resultado antigo e devolver a pessoa para o login mesmo já
+    // autenticada — daí precisar clicar de novo para "pegar".
+    //
+    // Trocar por uma navegação completa (não client-side) elimina essa
+    // corrida: o navegador faz uma requisição nova do zero para
+    // `callbackUrl`, que já sai com o cookie de sessão recém-gravado, sem
+    // depender de nenhum cache de rota do lado do cliente.
     const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
-    router.push(callbackUrl);
-    router.refresh();
+    window.location.assign(callbackUrl);
   };
 
   return (

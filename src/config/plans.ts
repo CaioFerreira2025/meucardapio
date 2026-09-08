@@ -138,8 +138,23 @@ export const PLANS: Plan[] = [
   {
     id: "starter",
     name: "Starter",
-    description: "Para começar e validar seu produto.",
-    features: ["1 usuário", "Recursos essenciais", "Suporte por email"],
+    description:
+      "Para restaurantes que querem começar a vender e gerenciar pedidos online.",
+    // Lista conferida contra o que existe hoje no sistema (ver telas em
+    // src/app/(dashboard)/dashboard/*). "Comandas", "Caixa", "Gestão de
+    // clientes" e "Avaliações" entraram aqui, e não no Pro, porque são
+    // rotas centrais do painel sem nenhum controle de acesso por plano —
+    // qualquer conta com acesso ativo (Starter, Pro ou só em teste) já
+    // abre essas telas hoje. Colocá-las como exclusividade do Pro seria
+    // prometer uma diferença que o sistema não aplica.
+    features: [
+      "Cardápio digital",
+      "QR Code na mesa",
+      "Pedidos online",
+      "Comandas e Caixa",
+      "Gestão de clientes e Avaliações",
+      "Suporte",
+    ],
     prices: buildPrices(4900, {
       monthly: offerId.starterMonthly,
       quarterly: offerId.starterQuarterly,
@@ -150,8 +165,25 @@ export const PLANS: Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    description: "Para quem já está crescendo.",
-    features: ["Usuários ilimitados", "Todos os recursos", "Suporte prioritário"],
+    description:
+      "Para restaurantes que querem mais controle e recursos para crescer.",
+    // Os 4 itens abaixo (fora "Tudo do Starter" e "Suporte prioritário")
+    // são os "módulos" reais do sistema (ver src/modules/registry.ts) —
+    // hoje eles são ligados por conta, um a um, no Painel Administrativo
+    // (src/lib/modules.ts), e não automaticamente pela assinatura. Ou
+    // seja: a diferença Starter/Pro aqui depende de alguém (você) ligar
+    // esses módulos manualmente para quem assina o Pro. Não existe
+    // "usuários ilimitados" no sistema — não há conceito de múltiplos
+    // usuários por restaurante no banco (Restaurant.ownerId é 1 para 1
+    // com User) — por isso esse item saiu da lista.
+    features: [
+      "Tudo do Starter",
+      "Relatórios de vendas",
+      "Cupons de desconto",
+      "Cálculo de taxa de entrega por bairro",
+      "Horário de funcionamento automático",
+      "Suporte prioritário",
+    ],
     highlighted: true,
     prices: buildPrices(9900, {
       monthly: offerId.proMonthly,

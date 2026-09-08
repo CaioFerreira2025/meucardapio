@@ -16,6 +16,12 @@ import {
 import { formatCents } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
+// Duplicado de propósito (não importado de src/lib/access.ts): este é um
+// Client Component, e access.ts arrasta prisma + NextAuth (código só de
+// servidor) — importar TRIAL_DAYS de lá quebraria o bundle do cliente. Se
+// TRIAL_DAYS mudar em access.ts, atualize este número junto.
+const TRIAL_DAYS = 15;
+
 // Grid de planos compartilhado entre a seção da landing, a página /pricing e
 // a tela de bloqueio por assinatura — mesmo componente nos três lugares, para
 // preço e copy nunca divergirem entre onde o cliente vê e onde ele compra.
@@ -216,6 +222,14 @@ export function PricingCards({
           );
         })}
       </RevealGroup>
+
+      {/* Redução de risco, discreta de propósito — não é um selo grande
+          nem compete com o preço. TRIAL_DAYS vem de src/lib/access.ts (a
+          mesma constante que o backend usa para calcular o fim do teste),
+          então esse número nunca destoa do que a conta realmente ganha. */}
+      <p className="text-center text-xs text-zinc-500">
+        {TRIAL_DAYS} dias para testar <span className="mx-1 text-zinc-700">•</span> Sem fidelidade
+      </p>
     </div>
   );
 }
