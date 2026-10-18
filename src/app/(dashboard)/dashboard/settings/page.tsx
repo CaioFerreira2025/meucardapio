@@ -5,6 +5,7 @@ import { pageTitle } from "@/config/brand";
 import { RestaurantSettingsForm } from "@/components/dashboard/restaurant-settings-form";
 import { PageHelp } from "@/components/dashboard/page-help";
 import { IfoodIntegrationCard } from "@/components/dashboard/IfoodIntegrationCard";
+import { NfeIntegrationCard } from "@/components/dashboard/NfeIntegrationCard";
 
 export const metadata: Metadata = {
   title: pageTitle("Configurações"),
@@ -42,7 +43,10 @@ export default async function SettingsPage() {
         <p className="mb-4 text-sm text-muted-foreground">
           Conecte o GreyPack a outras plataformas que você já usa.
         </p>
-        <IfoodIntegrationCard />
+        <div className="flex flex-col gap-4">
+          <IfoodIntegrationCard />
+          <NfeIntegrationCard />
+        </div>
       </div>
     </div>
   );
