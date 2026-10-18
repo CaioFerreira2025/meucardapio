@@ -4,6 +4,7 @@ import { getEffectiveRestaurant } from "@/lib/restaurant-context";
 import { pageTitle } from "@/config/brand";
 import { RestaurantSettingsForm } from "@/components/dashboard/restaurant-settings-form";
 import { PageHelp } from "@/components/dashboard/page-help";
+import { IfoodIntegrationCard } from "@/components/dashboard/IfoodIntegrationCard";
 
 export const metadata: Metadata = {
   title: pageTitle("Configurações"),
@@ -33,6 +34,16 @@ export default async function SettingsPage() {
           logoUrl: restaurant!.logoUrl,
         }}
       />
+
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight text-white">
+          Integrações
+        </h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Conecte o GreyPack a outras plataformas que você já usa.
+        </p>
+        <IfoodIntegrationCard />
+      </div>
     </div>
   );
 }
