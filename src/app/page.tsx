@@ -3,9 +3,11 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { HeroSection } from "@/components/landing/hero-section";
 import { DemoShowcase } from "@/components/landing/demo-showcase";
 import { ZeroCommissionSection } from "@/components/landing/zero-commission-section";
+import { PremiumModulesSection } from "@/components/landing/premium-modules-section";
 import { OperationSection } from "@/components/landing/operation-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { MigrationSection } from "@/components/landing/migration-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -37,10 +39,12 @@ export default async function Home() {
             Deixá-las no fim da página seria entregá-las a quem já rolou o
             site inteiro — ou seja, a quem já estava convencido. */}
         <ZeroCommissionSection />
+        <PremiumModulesSection />
         <OperationSection />
         <DemoShowcase />
         <FeaturesSection />
         <HowItWorksSection />
+        <MigrationSection />
         <PricingSection isAuthenticated={Boolean(session?.user)} />
         <FinalCtaSection />
       </main>

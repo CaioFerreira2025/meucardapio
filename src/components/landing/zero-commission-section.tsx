@@ -58,7 +58,10 @@ export function ZeroCommissionSection() {
             <p className="max-w-2xl text-lg text-zinc-400">
               Seu cardápio vira um link. Você manda no grupo do WhatsApp, coloca
               na bio do Instagram, imprime o QR Code — ou tudo isso junto. O
-              pedido cai direto no seu painel e o dinheiro é 100% seu.
+              pedido cai direto no seu painel e o dinheiro é 100% seu. É um
+              dos módulos do seu sistema de gestão — ao lado do PDV, do
+              controle de caixa e, quando precisar, dos módulos sob consulta
+              de iFood e fiscal.
             </p>
           </div>
         </Reveal>

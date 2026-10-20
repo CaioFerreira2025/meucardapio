@@ -18,9 +18,9 @@ import { LogoMark } from "@/components/brand/logo";
 import { BRAND_NAME, DEMO_RESTAURANT_SLUG } from "@/config/brand";
 
 const TRUST_ITEMS = [
-  "Configura em minutos",
-  "Sem app pra instalar",
-  "Funciona em qualquer celular",
+  "PDV e gestão completos",
+  "Cardápio digital sem comissão",
+  "Consultoria especializada para crescer",
 ];
 
 export function HeroSection() {
@@ -138,7 +138,7 @@ export function HeroSection() {
           className="inline-flex items-center gap-2 rounded-full border border-brand-300/25 bg-brand-500/10 px-4 py-1.5 text-[11px] font-medium tracking-[0.14em] text-brand-200 uppercase backdrop-blur-md"
         >
           <Sparkles className="size-3.5 text-brand-300" />
-          Feito para restaurantes, lanchonetes e hamburguerias
+          O sistema de gestão completo para restaurantes, lanchonetes e hamburguerias
         </motion.div>
 
         <motion.h1
@@ -147,11 +147,10 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-4xl leading-[1.08] font-semibold tracking-tight text-white sm:text-6xl"
         >
-          Aumente suas vendas com o{" "}
+          PDV, gestão e delivery em um só sistema{" "}
           <span className="bg-gradient-to-r from-brand-300 via-brand-200 to-brand-400 bg-clip-text text-transparent">
-            cardápio digital
-          </span>{" "}
-          mais rápido e moderno
+            do jeito que você escolher
+          </span>
         </motion.h1>
 
         <motion.p
@@ -160,11 +159,12 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="max-w-2xl text-lg text-zinc-400 sm:text-xl"
         >
-          Com o {BRAND_NAME} seu cardápio vira um link para vender direto no
-          WhatsApp e no Instagram — <strong className="font-semibold text-zinc-200">
-          sem pagar comissão por pedido</strong>. Os pedidos caem organizados no
-          seu painel, e o QR Code na mesa fica disponível se você também
-          atende no salão.
+          O {BRAND_NAME} reúne PDV, controle de caixa, pedidos e cardápio
+          digital <strong className="font-semibold text-zinc-200">sem pagar
+          comissão por pedido</strong> em um só painel. E quando quiser ir
+          além, conte com nossos consultores para avaliar módulos sob
+          medida de integração com o iFood e de gestão fiscal para o seu
+          negócio.
         </motion.p>
 
         <motion.div
